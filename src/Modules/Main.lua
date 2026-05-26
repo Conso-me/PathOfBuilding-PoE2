@@ -87,6 +87,7 @@ function main:Init()
 	end
 
 	self.buildSortMode = "NAME"
+	self.locale = "ja_JP"
 	self.connectionProtocol = 0
 	self.nodePowerTheme = "RED/BLUE"
 	self.colorPositive = defaultColorCodes.POSITIVE
@@ -619,6 +620,10 @@ function main:LoadSettings(ignoreBuild)
 				if node.attrib.showPublicBuilds then
 					self.showPublicBuilds = node.attrib.showPublicBuilds == "true"
 				end
+				if node.attrib.locale and launch.locale then
+					self.locale = node.attrib.locale
+					launch.locale.SetLocale(self.locale)
+				end
 			end
 		end
 	end
@@ -729,7 +734,8 @@ function main:SaveSettings()
 		POESESSID = self.POESESSID,
 		invertSliderScrollDirection = tostring(self.invertSliderScrollDirection),
 		disableDevAutoSave = tostring(self.disableDevAutoSave),
-		showPublicBuilds = tostring(self.showPublicBuilds)
+		showPublicBuilds = tostring(self.showPublicBuilds),
+		locale = self.locale
 	} })
 	local res, errMsg = common.xml.SaveXMLFile(setXML, self.userPath.."Settings.xml")
 	if not res then
@@ -811,6 +817,19 @@ function main:OpenOptionsPopup()
 
 	drawSectionHeader("app", "Application options")
 
+	controls.language = new("DropDownControl", { "TOPLEFT", nil, "TOPLEFT" }, { defaultLabelPlacementX, currentY, 120, 18 }, {
+		{ label = T("English"), locale = "en_US" },
+		{ label = T("Japanese"), locale = "ja_JP" },
+	}, function(index, value)
+		self.locale = value.locale
+		if launch.locale then
+			launch.locale.SetLocale(self.locale)
+		end
+	end)
+	controls.languageLabel = new("LabelControl", { "RIGHT", controls.language, "LEFT" }, { defaultLabelSpacingPx, 0, 0, 16 }, "^7" .. T("Language:"))
+	controls.language:SelByValue(self.locale, "locale")
+
+	nextRow()
 	controls.connectionProtocol = new("DropDownControl", { "TOPLEFT", nil, "TOPLEFT" }, { defaultLabelPlacementX, currentY, 100, 18 }, {
 		{ label = "Auto", protocol = 0 },
 		{ label = "IPv4", protocol = 1 },
@@ -990,6 +1009,7 @@ function main:OpenOptionsPopup()
 	controls.edgeSearchHighlight.state = self.edgeSearchHighlight
 	controls.titlebarName.state = self.showTitlebarName
 	controls.showPublicBuilds.state = self.showPublicBuilds
+	local initialLocale = self.locale
 	local initialNodePowerTheme = self.nodePowerTheme
 	local initialColorPositive = self.colorPositive
 	local initialColorNegative = self.colorNegative
@@ -1037,6 +1057,12 @@ function main:OpenOptionsPopup()
 		main:SaveSettings()
 	end)
 	controls.cancel = new("ButtonControl", nil, {45, currentY, 80, 20}, T("Cancel"), function()
+		if self.locale ~= initialLocale then
+			self.locale = initialLocale
+			if launch.locale then
+				launch.locale.SetLocale(self.locale)
+			end
+		end
 		self.nodePowerTheme = initialNodePowerTheme
 		self.colorPositive = initialColorPositive
 		updateColorCode("POSITIVE", self.colorPositive)

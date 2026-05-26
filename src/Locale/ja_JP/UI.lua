@@ -64,6 +64,9 @@ return {
 
 	-- 設定画面ラベル
 	["Application options"] = "アプリケーション設定",
+	["Language:"] = "言語:",
+	["English"] = "English",
+	["Japanese"] = "日本語",
 	["Connection Protocol:"] = "接続プロトコル:",
 	["Build save path:"] = "ビルド保存パス:",
 	["User settings path cannot be loaded:"] = "ユーザー設定パスを読み込めません:",

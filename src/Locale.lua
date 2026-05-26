@@ -15,6 +15,7 @@
 local Locale = { }
 local current = "ja_JP"
 local cache = { }
+local modCache = { }
 
 -- loadDict merges two sources for the given category:
 --   1. src/Locale/<locale>/<name>.lua          — base dictionary (auto-scraped
@@ -83,7 +84,6 @@ end
 -- Mods.lua merges base + overrides differently from key-value dicts (it's an
 -- array-of-pattern-pairs). We cache the merged list with overrides FIRST so
 -- they win the linear scan against the bigger base list.
-local modCache = { }
 local function loadModPatterns(locale)
 	if modCache[locale] ~= nil then return modCache[locale] end
 	local merged = { }
