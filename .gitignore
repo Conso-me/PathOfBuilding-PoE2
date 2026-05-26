@@ -45,3 +45,9 @@ runtime/imgui.ini
 
 
 src/poe_api_response.json
+
+# JP localization tooling
+.venv/
+__pycache__/
+*.pyc
+tools/.cache/

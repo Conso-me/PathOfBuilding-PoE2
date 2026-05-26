@@ -64,6 +64,22 @@ function launch:OnInit()
 		installedFile:close()
 	end
 	RenderInit()
+	do
+		local localeErr, Locale = PLoadModule("Locale")
+		local identity = function(x) return x end
+		if localeErr or type(Locale) ~= "table" then
+			ConPrintf("Warning: Locale module failed to load (%s); running English fallback.\n", tostring(localeErr))
+			T, SkillT, ItemT, StatT, KeywordT, ModFormat = identity, identity, identity, identity, identity, identity
+		else
+			T = Locale.T or identity
+			SkillT = Locale.SkillT or identity
+			ItemT = Locale.ItemT or identity
+			StatT = Locale.StatT or identity
+			KeywordT = Locale.KeywordT or identity
+			ModFormat = Locale.ModFormat or identity
+			self.locale = Locale
+		end
+	end
 	ConPrintf("Loading main script...")
 	local errMsg
 	errMsg, self.main = PLoadModule("Modules/Main")
