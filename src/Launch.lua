@@ -65,6 +65,27 @@ function launch:OnInit()
 	end
 	RenderInit()
 	do
+		-- JaText: image-based Japanese text renderer (bypasses 128-glyph TGF limit).
+		local jaErr, JaText = PLoadModule("JaText")
+		if not jaErr and type(JaText) == "table" then
+			if JaText.installHook() then
+				self.jaText = JaText
+			end
+		else
+			ConPrintf("[JaText] Not loaded: %s", tostring(jaErr))
+		end
+	end
+	do
+		-- Font diagnostics (logs CJK chars reaching DrawString for debugging).
+		local diagErr, FontDiag = PLoadModule("FontDiag")
+		if not diagErr and type(FontDiag) == "table" then
+			FontDiag.installHook()
+			self.fontDiag = FontDiag
+		else
+			ConPrintf("[FontDiag] Not loaded: %s", tostring(diagErr))
+		end
+	end
+	do
 		local localeErr, Locale = PLoadModule("Locale")
 		local identity = function(x) return x end
 		if localeErr or type(Locale) ~= "table" then
@@ -80,6 +101,23 @@ function launch:OnInit()
 			self.locale = Locale
 		end
 	end
+
+	-- Font rendering probe: measure width of known strings to verify glyph loading.
+	-- [U+XXXX] fallback for a single CJK char renders as ~9 chars wide at size 16.
+	-- A real glyph should be ~14-18px wide.
+	do
+		local function probe(label, text, size)
+			local w = DrawStringWidth(size or 16, "VAR", text)
+			ConPrintf("[FontProbe] %s: width=%d (size=%d)", label, w, size or 16)
+		end
+		probe("ASCII 'A'", "A")
+		probe("ASCII 'hello'", "hello")
+		probe("あ (U+3042)", "\227\129\130")          -- UTF-8 for あ
+		probe("ス (U+30B9)", "\227\130\185")          -- UTF-8 for ス
+		probe("設 (U+8A2D)", "\232\168\173")          -- UTF-8 for 設
+		probe("5xCJK 'スキル攻撃'", "\227\130\185\227\130\173\227\131\171\230\149\187\230\149\131")
+	end
+
 	ConPrintf("Loading main script...")
 	local errMsg
 	errMsg, self.main = PLoadModule("Modules/Main")

@@ -37,6 +37,14 @@ fi
 step "4/4  Coverage report"
 python3 tools/coverage_report.py
 
+step "5/5  Font atlas (kanji from src scan)"
+if [ "$MODE" != "--dry" ]; then
+  /tmp/pob-font-env/bin/python3 tools/gen_ja_font.py \
+    --scan-src src \
+    --sizes 14,16,18,20 \
+    --luamap src/Locale/ja_JP/GlyphMap.lua
+fi
+
 if [ "$MODE" != "--dry" ]; then
   printf '\n\033[1;32mDone. Review with: git diff --stat\033[0m\n'
 fi
