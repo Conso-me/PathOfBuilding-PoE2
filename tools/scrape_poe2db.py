@@ -158,6 +158,142 @@ def lua_escape(s: str) -> str:
     return s.replace("\\", "\\\\").replace('"', '\\"')
 
 
+# ────────────────────────────────────────────────────────────────
+# Mod template extraction (separate flow from class-attribute scrape)
+# ────────────────────────────────────────────────────────────────
+
+MOD_SPAN_RE = re.compile(
+    r'<span class="(?:explicitMod|implicitMod)">(.*?)</span>',
+    re.DOTALL,
+)
+SECONDARY_SPAN_RE = re.compile(
+    r'<span class="secondary">.*?</span>',
+    re.DOTALL,
+)
+BADGE_SPAN_RE = re.compile(
+    r'<span class="badge[^"]*"[^>]*>.*?</span>',
+    re.DOTALL,
+)
+MOD_VALUE_DOUBLE = re.compile(r'<span class="mod-value">.*?</span>', re.DOTALL)
+MOD_VALUE_SINGLE = re.compile(r"<span class='mod-value'>.*?</span>", re.DOTALL)
+ANY_TAG_RE = re.compile(r'<[^>]+>')
+
+
+NDASH_SPAN_RE = re.compile(r'<span class="ndash">(.*?)</span>', re.DOTALL)
+# After ndash flatten, mod-value spans are flat — non-greedy is safe.
+MOD_VALUE_FLAT = re.compile(
+    r"<span class=['\"]mod-value['\"]>([^<]*)</span>"
+)
+# Sentinel substituted into the HTML for each mod-value, so the outer explicit
+# /implicit Mod span has no nested <span> tags by the time we extract it.
+SENTINEL = "\x00MV\x00"
+
+
+def _preflatten(html: str) -> str:
+    """Make the HTML safe for non-greedy outer-span extraction by removing all
+    nested <span class="ndash"> and replacing every <span class="mod-value">…
+    </span> with a SENTINEL marker. We re-introduce per-mod %N placeholders
+    later in _normalize_mod."""
+    html = NDASH_SPAN_RE.sub(r'\1', html)
+    html = MOD_VALUE_FLAT.sub(SENTINEL, html)
+    return html
+
+
+def _normalize_mod(raw: str) -> list[str]:
+    """Inner HTML of one explicitMod/implicitMod span → list of clean lines
+    with %1, %2, ... placeholders where mod-value spans were.
+
+    Expects the input to have already passed through _preflatten() — SENTINEL
+    strings are re-numbered per LINE (not per mod) so that the resulting Lua
+    pattern captures align 1-to-1 with Lua gsub backreferences."""
+    raw = SECONDARY_SPAN_RE.sub('', raw)
+    raw = BADGE_SPAN_RE.sub('', raw)
+    parts = re.split(r'<br\s*/?>', raw)
+    out: list[str] = []
+    for p in parts:
+        # Re-number SENTINEL → %1, %2, ... PER LINE so capture indices align
+        # with Lua gsub backreference numbering inside this single mod line.
+        counter = [0]
+        def sub_sentinel(_m):
+            counter[0] += 1
+            return f"%{counter[0]}"
+        s = re.sub(re.escape(SENTINEL), sub_sentinel, p)
+        s = ANY_TAG_RE.sub('', s)
+        s = (s.replace('&amp;', '&').replace('&lt;', '<')
+               .replace('&gt;', '>').replace('&nbsp;', ' '))
+        s = re.sub(r'\s+', ' ', s).strip()
+        if s:
+            out.append(s)
+    return out
+
+
+LUA_MAGIC = set("().%+-*?[]^$")
+
+
+def _lua_escape_pattern(s: str) -> str:
+    """Escape Lua-pattern magic chars (NOT Python regex's set — Lua uses % not \\)."""
+    return ''.join('%' + c if c in LUA_MAGIC else c for c in s)
+
+
+def scrape_mod_patterns() -> list[dict]:
+    """Pair EN/JP mod templates position-by-position. Returns a list of
+    {"en": <lua pattern>, "ja": <replacement>} dicts ready for Mods.lua.
+
+    Skips entries whose line counts diverge between EN and JP (translator
+    sometimes joins/splits lines) and entries whose JP is still English-only
+    (technical secondary-leak that escaped the secondary-span filter)."""
+    en_html = fetch("/us/Modifiers")
+    time.sleep(DELAY)
+    jp_html = fetch("/jp/Modifiers")
+    time.sleep(DELAY)
+    en_html = _preflatten(en_html)
+    jp_html = _preflatten(jp_html)
+    en_spans = [_normalize_mod(m) for m in MOD_SPAN_RE.findall(en_html)]
+    jp_spans = [_normalize_mod(m) for m in MOD_SPAN_RE.findall(jp_html)]
+    seen: set[tuple[str, str]] = set()
+    out: list[dict] = []
+    for en_lines, jp_lines in zip(en_spans, jp_spans):
+        if len(en_lines) != len(jp_lines):
+            continue
+        for en, ja in zip(en_lines, jp_lines):
+            if en == ja:
+                continue                            # untranslated technical text
+            if not re.search(r'[぀-ヿ一-鿿]', ja):  # no Japanese chars → skip
+                continue
+            if (en, ja) in seen:
+                continue                            # dedupe
+            seen.add((en, ja))
+            # First escape Lua magic in the EN text, then re-introduce captures.
+            # The mod-value placeholders were inserted as bare %1 .. %9 before
+            # escape, so they end up looking like %%1 .. %%9 after escape; we
+            # convert each to (%d+) here, which is Lua's "one or more digits".
+            en_pat = _lua_escape_pattern(en)
+            for n in range(1, 10):
+                en_pat = en_pat.replace(f'%%{n}', '(%d+)')
+            # In ja the placeholders are also %1..%9; Lua gsub uses %1 syntax
+            # for backreferences, so they pass through unchanged.
+            out.append({"en": '^' + en_pat + '$', "ja": ja})
+    return out
+
+
+def write_mods_lua(out_path: Path, patterns: list[dict]) -> None:
+    lines = [
+        "-- Mod template patterns from poe2db.tw/jp/Modifiers.",
+        "-- Auto-generated by tools/scrape_poe2db.py.",
+        "-- Each entry's `en` field is a Lua pattern; `ja` may reference %1..%N",
+        "-- captures. ModFormat() in Locale.lua falls back to the original on miss.",
+        "return {",
+        "\tpatterns = {",
+    ]
+    for p in patterns:
+        en = p["en"].replace('\\', '\\\\').replace('"', '\\"')
+        ja = p["ja"].replace('\\', '\\\\').replace('"', '\\"')
+        lines.append(f'\t\t{{ en = "{en}", ja = "{ja}" }},')
+    lines.append("\t},")
+    lines.append("}")
+    out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def write_lua_dict(out_path: Path, mapping: dict[str, str], header: str) -> None:
     lines = [
         f"-- {header}",
@@ -175,7 +311,7 @@ def write_lua_dict(out_path: Path, mapping: dict[str, str], header: str) -> None
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description="Scrape poe2db.tw/jp into Lua dictionaries.")
-    parser.add_argument("--only", choices=list(CATEGORIES), default=None,
+    parser.add_argument("--only", choices=list(CATEGORIES) + ["Mods"], default=None,
                         help="Scrape one category only (debug).")
     parser.add_argument("--out", default=None,
                         help="Output directory (default: ../src/Locale/ja_JP/ relative to this script).")
@@ -192,7 +328,14 @@ def main(argv: list[str]) -> int:
         for p in spec["urls"]:
             skip_slugs.add(p.removeprefix("/jp/").rstrip("/"))
 
-    categories = {args.only: CATEGORIES[args.only]} if args.only else CATEGORIES
+    # "Mods" is handled in its own post-loop branch; for the main category loop
+    # we just skip it here (it's not in CATEGORIES anyway).
+    if args.only and args.only != "Mods":
+        categories = {args.only: CATEGORIES[args.only]}
+    elif args.only == "Mods":
+        categories = {}    # main loop runs zero times; Mods branch executes below
+    else:
+        categories = CATEGORIES
 
     total = 0
     for category, spec in categories.items():
@@ -217,6 +360,23 @@ def main(argv: list[str]) -> int:
         total += len(merged)
 
     print(f"\nDone. {total} entries total across {len(categories)} categor{'y' if len(categories) == 1 else 'ies'}.")
+
+    # Mods are handled separately because their structure (placeholder templates
+    # with %N captures, not simple key→value pairs) requires different scraping.
+    # Skipped when --only narrows to a specific category.
+    if not args.only or args.only == "Mods":
+        print("\nScraping mod templates (/us/Modifiers + /jp/Modifiers)...")
+        try:
+            patterns = scrape_mod_patterns()
+        except requests.RequestException as e:
+            print(f"  ! failed: {e}", file=sys.stderr)
+            patterns = []
+        out_path = out_dir / "Mods.lua"
+        if not args.dry_run:
+            write_mods_lua(out_path, patterns)
+        print(f"  -> Mods.lua: {len(patterns)} patterns"
+              + (" (dry-run, not written)" if args.dry_run else ""))
+
     return 0
 
 

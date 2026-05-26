@@ -13,9 +13,9 @@
 | **Stats** | **98** | **手動シード**（poe2db に dedicated page 無し） | ✅ **新規** |
 | Tree | 73 | `/jp/Ascendancy_class` `/jp/passive-skill-tree/` | △ 上位職のみ |
 | UI | 152 | 手動翻訳 + `tools/extract_strings.py` キュー | ✅ 100% カバレッジ |
-| Mods | 0 | `/jp/Modifiers` HTML 構造未解析 | ❌ 後回し |
+| **Mods** | **16** | `/us/Modifiers` + `/jp/Modifiers` 並列スクレイプ＋位置ペアリング＋ placeholder 解析 | ✅ **新規 (Phase 14)** |
 
-**合計: 2,585 件**（前回 1,910 件から +675 件）
+**合計: 2,753 件**
 
 ## 改善履歴
 
@@ -32,10 +32,11 @@
 
 ## 残課題
 
-### 1. Mods（最難関、未着手）
-- `/jp/Modifiers` の `class="explicitMod"` `class="implicitMod"` 内に nested HTML（KeywordPopups, mod-value 等）
-- placeholder `(15—25)` の構造マッチが必要（EN/JP 並列取得＋位置合わせ）
-- 真っ当な実装には HTML parser（bs4 など）が必要 → 別セッションで取り組む
+### 1. Mods 拡充
+- 現状 `/jp/Modifiers` ページから 16 パターン取得済（Phase 14）
+- ただしこのページは jewel notable / map mod / craft bench mod 等の特殊 mod のみ
+- 一般的な「+X to maximum Life」「Adds N to M Fire Damage」系の roll mod は **item-base ページ** に分散している
+- → 各 body-slot ページの `explicitMod`/`implicitMod` セクションを追加収集すれば数百〜数千件取れる見込み（次フェーズ）
 
 ### 2. Tree 拡張
 - パッシブツリーのノード名は 73 件（上位職のみ）
