@@ -162,8 +162,12 @@ def lua_escape(s: str) -> str:
 # Mod template extraction (separate flow from class-attribute scrape)
 # ────────────────────────────────────────────────────────────────
 
+# Mod templates appear as:
+#   <span class="explicitMod">…</span>  on /Modifiers (special mods)
+#   <div  class="explicitMod">…</div>   on item-base pages (unique mods baked
+#                                        into specific item bases)
 MOD_SPAN_RE = re.compile(
-    r'<span class="(?:explicitMod|implicitMod)">(.*?)</span>',
+    r'<(span|div) class="(?:explicitMod|implicitMod)">(.*?)</\1>',
     re.DOTALL,
 )
 SECONDARY_SPAN_RE = re.compile(
@@ -235,44 +239,64 @@ def _lua_escape_pattern(s: str) -> str:
     return ''.join('%' + c if c in LUA_MAGIC else c for c in s)
 
 
-def scrape_mod_patterns() -> list[dict]:
-    """Pair EN/JP mod templates position-by-position. Returns a list of
-    {"en": <lua pattern>, "ja": <replacement>} dicts ready for Mods.lua.
+# Pages to harvest mod templates from. Each item-base page contributes the
+# explicit/implicit mods baked into its unique items as <div class="...Mod">.
+# Order matters only for dedupe — the global /Modifiers entries come first
+# because their patterns tend to be more specific (jewel/map mods).
+MOD_SOURCES = [
+    "/Modifiers",
+    "/Body_Armours", "/Helmets", "/Gloves", "/Boots", "/Belts",
+    "/Rings", "/Amulets", "/Bows", "/Crossbows", "/Wands",
+    "/Staves", "/Sceptres", "/Spears", "/Flails", "/Quivers",
+    "/Shields", "/Bucklers", "/Charms", "/Flasks", "/Jewels",
+]
 
-    Skips entries whose line counts diverge between EN and JP (translator
-    sometimes joins/splits lines) and entries whose JP is still English-only
-    (technical secondary-leak that escaped the secondary-span filter)."""
-    en_html = fetch("/us/Modifiers")
+
+def _harvest_mod_lines(path: str) -> tuple[list[list[str]], list[list[str]]]:
+    """Fetch /us<path> and /jp<path>, return (en_spans, jp_spans).
+    Each span is a list of cleaned mod lines."""
+    en_html = fetch("/us" + path)
     time.sleep(DELAY)
-    jp_html = fetch("/jp/Modifiers")
+    jp_html = fetch("/jp" + path)
     time.sleep(DELAY)
     en_html = _preflatten(en_html)
     jp_html = _preflatten(jp_html)
-    en_spans = [_normalize_mod(m) for m in MOD_SPAN_RE.findall(en_html)]
-    jp_spans = [_normalize_mod(m) for m in MOD_SPAN_RE.findall(jp_html)]
+    en_spans = [_normalize_mod(t[1]) for t in MOD_SPAN_RE.findall(en_html)]
+    jp_spans = [_normalize_mod(t[1]) for t in MOD_SPAN_RE.findall(jp_html)]
+    return en_spans, jp_spans
+
+
+def scrape_mod_patterns() -> list[dict]:
+    """Pair EN/JP mod templates position-by-position across every MOD_SOURCES
+    page. Returns a list of {"en": <lua pattern>, "ja": <replacement>} dicts
+    ready for Mods.lua, deduped globally."""
     seen: set[tuple[str, str]] = set()
     out: list[dict] = []
-    for en_lines, jp_lines in zip(en_spans, jp_spans):
-        if len(en_lines) != len(jp_lines):
+    for path in MOD_SOURCES:
+        try:
+            en_spans, jp_spans = _harvest_mod_lines(path)
+        except requests.HTTPError as e:
+            print(f"    ! HTTP {e.response.status_code} on {path} — skipped",
+                  file=sys.stderr)
             continue
-        for en, ja in zip(en_lines, jp_lines):
-            if en == ja:
-                continue                            # untranslated technical text
-            if not re.search(r'[぀-ヿ一-鿿]', ja):  # no Japanese chars → skip
+        except requests.RequestException as e:
+            print(f"    ! request failed on {path}: {e}", file=sys.stderr)
+            continue
+        for en_lines, jp_lines in zip(en_spans, jp_spans):
+            if len(en_lines) != len(jp_lines):
                 continue
-            if (en, ja) in seen:
-                continue                            # dedupe
-            seen.add((en, ja))
-            # First escape Lua magic in the EN text, then re-introduce captures.
-            # The mod-value placeholders were inserted as bare %1 .. %9 before
-            # escape, so they end up looking like %%1 .. %%9 after escape; we
-            # convert each to (%d+) here, which is Lua's "one or more digits".
-            en_pat = _lua_escape_pattern(en)
-            for n in range(1, 10):
-                en_pat = en_pat.replace(f'%%{n}', '(%d+)')
-            # In ja the placeholders are also %1..%9; Lua gsub uses %1 syntax
-            # for backreferences, so they pass through unchanged.
-            out.append({"en": '^' + en_pat + '$', "ja": ja})
+            for en, ja in zip(en_lines, jp_lines):
+                if en == ja:
+                    continue
+                if not re.search(r'[぀-ヿ一-鿿]', ja):
+                    continue
+                if (en, ja) in seen:
+                    continue
+                seen.add((en, ja))
+                en_pat = _lua_escape_pattern(en)
+                for n in range(1, 10):
+                    en_pat = en_pat.replace(f'%%{n}', '(%d+)')
+                out.append({"en": '^' + en_pat + '$', "ja": ja})
     return out
 
 

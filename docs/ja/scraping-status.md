@@ -13,9 +13,9 @@
 | **Stats** | **98** | **手動シード**（poe2db に dedicated page 無し） | ✅ **新規** |
 | Tree | 73 | `/jp/Ascendancy_class` `/jp/passive-skill-tree/` | △ 上位職のみ |
 | UI | 152 | 手動翻訳 + `tools/extract_strings.py` キュー | ✅ 100% カバレッジ |
-| **Mods** | **16** | `/us/Modifiers` + `/jp/Modifiers` 並列スクレイプ＋位置ペアリング＋ placeholder 解析 | ✅ **新規 (Phase 14)** |
+| **Mods** | **2053** | `/us/Modifiers` + 20 個の `/us/<body-slot>` ページ＋対応 JP ページから並列スクレイプ。`<span>` と `<div>` 両方の `class="(explicit\|implicit)Mod"` を捕捉。 | ✅ **Phase 16 拡張** |
 
-**合計: 2,753 件**
+**合計: 4,790 件**
 
 ## 改善履歴
 
@@ -32,11 +32,10 @@
 
 ## 残課題
 
-### 1. Mods 拡充
-- 現状 `/jp/Modifiers` ページから 16 パターン取得済（Phase 14）
-- ただしこのページは jewel notable / map mod / craft bench mod 等の特殊 mod のみ
-- 一般的な「+X to maximum Life」「Adds N to M Fire Damage」系の roll mod は **item-base ページ** に分散している
-- → 各 body-slot ページの `explicitMod`/`implicitMod` セクションを追加収集すれば数百〜数千件取れる見込み（次フェーズ）
+### 1. Mods の品質改善（Phase 16 で 2,053 件取得済、次は一般化）
+- 「Monster Level: 83」のような具体値混じりパターンが多数 → 手動 override で `(%d+)` テンプレに置換
+- `_overrides/Mods.lua` 仕組みは未実装（既存の `_overrides/` は dict 用、Mods は array 構造のため別ロジック必要）
+- 実機パフォーマンス未計測（2,053 パターン × tooltip 表示頻度）
 
 ### 2. Tree 拡張
 - パッシブツリーのノード名は 73 件（上位職のみ）
