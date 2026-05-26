@@ -16,15 +16,29 @@ local Locale = { }
 local current = "ja_JP"
 local cache = { }
 
+-- loadDict merges two sources for the given category:
+--   1. src/Locale/<locale>/<name>.lua          — base dictionary (auto-scraped
+--                                                from poe2db or manually
+--                                                maintained; do not hand-edit
+--                                                if scraped — scrape will
+--                                                clobber changes)
+--   2. src/Locale/<locale>/_overrides/<name>.lua — optional user overrides
+--                                                that win when present.
+--                                                Safe to hand-edit; scraper
+--                                                never touches this dir.
 local function loadDict(locale, name)
 	cache[locale] = cache[locale] or { }
 	if cache[locale][name] == nil then
-		local errMsg, dict = PLoadModule("Locale/" .. locale .. "/" .. name)
-		if errMsg or type(dict) ~= "table" then
-			cache[locale][name] = { }
-		else
-			cache[locale][name] = dict
+		local merged = { }
+		local err1, base = PLoadModule("Locale/" .. locale .. "/" .. name)
+		if not err1 and type(base) == "table" then
+			for k, v in pairs(base) do merged[k] = v end
 		end
+		local err2, overrides = PLoadModule("Locale/" .. locale .. "/_overrides/" .. name)
+		if not err2 and type(overrides) == "table" then
+			for k, v in pairs(overrides) do merged[k] = v end
+		end
+		cache[locale][name] = merged
 	end
 	return cache[locale][name]
 end
