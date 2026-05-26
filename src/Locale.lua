@@ -46,6 +46,7 @@ end
 function Locale.SetLocale(locale)
 	current = locale
 	cache[locale] = nil
+	modCache[locale] = nil
 end
 
 function Locale.GetLocale()
@@ -79,11 +80,31 @@ function Locale.KeywordT(name)
 	return loadDict(current, "Keywords")[name] or name
 end
 
+-- Mods.lua merges base + overrides differently from key-value dicts (it's an
+-- array-of-pattern-pairs). We cache the merged list with overrides FIRST so
+-- they win the linear scan against the bigger base list.
+local modCache = { }
+local function loadModPatterns(locale)
+	if modCache[locale] ~= nil then return modCache[locale] end
+	local merged = { }
+	local function append(name)
+		local err, mods = PLoadModule("Locale/" .. locale .. "/" .. name)
+		if not err and type(mods) == "table" and type(mods.patterns) == "table" then
+			for _, p in ipairs(mods.patterns) do
+				merged[#merged + 1] = p
+			end
+		end
+	end
+	-- Overrides first so they short-circuit the scan ahead of generic patterns.
+	append("_overrides/Mods")
+	append("Mods")
+	modCache[locale] = merged
+	return merged
+end
+
 function Locale.ModFormat(line)
 	if type(line) ~= "string" or line == "" then return line end
-	local mods = loadDict(current, "Mods")
-	local patterns = mods.patterns
-	if type(patterns) ~= "table" then return line end
+	local patterns = loadModPatterns(current)
 	for i = 1, #patterns do
 		local pat = patterns[i]
 		local out, count = line:gsub(pat.en, pat.ja)

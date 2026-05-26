@@ -15,6 +15,8 @@
 
 ## マージ順序
 
+### Dict 系（UI / Skills / Items / Uniques / Stats / Keywords / Tree）
+
 `src/Locale.lua` の `loadDict()` で:
 
 ```
@@ -23,6 +25,21 @@
 ```
 
 の順でマージされる。同じキーが両方にあれば override の値が勝つ。
+
+### Mods（配列構造）
+
+`Mods.lua` は `{ patterns = { {en=, ja=}, ... } }` の配列形式。
+`Locale.lua` の `loadModPatterns()` で:
+
+```
+1. _overrides/Mods.lua の patterns     ← 先に並ぶ → 線形 scan で先勝ち
+2. Mods.lua の patterns                 ← 後ろに並ぶ
+```
+
+`ModFormat()` は最初に match した pattern で打ち切るので、override の汎用
+パターン（例: `Monster Level: (%d+)`）でスクレイプ起源の具体パターン（例:
+`Monster Level: 83`）を実質的に上書きできる。同じ pattern を base 側で
+maintain 不要 — override が先勝ちするだけ。
 
 ## 例: poe2db 訳の修正
 
