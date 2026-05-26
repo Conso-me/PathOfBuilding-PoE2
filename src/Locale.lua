@@ -50,7 +50,9 @@ end
 
 function Locale.ItemT(name)
 	if type(name) ~= "string" then return name end
-	return loadDict(current, "Items")[name] or name
+	local v = loadDict(current, "Items")[name]
+	if v then return v end
+	return loadDict(current, "Uniques")[name] or name
 end
 
 function Locale.StatT(name)

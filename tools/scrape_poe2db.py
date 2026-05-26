@@ -38,6 +38,11 @@ TIMEOUT = 30
 #   - Uniques use class="uniqueitem".
 # We match by class pattern so nav garbage is dropped automatically.
 
+# NOTE: src/Locale/ja_JP/Stats.lua is maintained manually — poe2db has no
+# dedicated stats page (verified: /jp/Stat /jp/Statistics /jp/Stat_Descriptions
+# etc. all 404). It's intentionally NOT in CATEGORIES so this script never
+# overwrites it.
+
 CATEGORIES = {
     "Skills": {
         "urls": [
@@ -47,6 +52,8 @@ CATEGORIES = {
         "class_re": r"(?:gemitem|gem_red|gem_green|gem_blue|gem_white|gem_purple|gem_black)",
     },
     "Items": {
+        # Body-slot pages contain both normal-base items (class="whiteitem") and
+        # unique items (class="uniqueitem") in separate sections of the same page.
         "urls": [
             "/jp/Body_Armours", "/jp/Helmets", "/jp/Gloves", "/jp/Boots", "/jp/Belts",
             "/jp/Rings", "/jp/Amulets", "/jp/Bows", "/jp/Crossbows", "/jp/Wands",
@@ -57,13 +64,22 @@ CATEGORIES = {
         "class_re": r"whiteitem",
     },
     "Uniques": {
-        "urls": ["/jp/Uniques"],
+        # Same body-slot URLs as Items — uniques are present on the same pages
+        # under a different CSS class. Keep the URL list mirrored.
+        "urls": [
+            "/jp/Body_Armours", "/jp/Helmets", "/jp/Gloves", "/jp/Boots", "/jp/Belts",
+            "/jp/Rings", "/jp/Amulets", "/jp/Bows", "/jp/Crossbows", "/jp/Wands",
+            "/jp/Staves", "/jp/Sceptres", "/jp/Spears", "/jp/Flails", "/jp/Quivers",
+            "/jp/Shields", "/jp/Focuses", "/jp/Bucklers", "/jp/Charms", "/jp/Flasks",
+            "/jp/Jewels", "/jp/Tablets",
+        ],
         "class_re": r"uniqueitem",
     },
     "Keywords": {
         "urls": ["/jp/Keywords"],
-        # Keywords page uses generic /jp/Slug pattern — fall back to plain href match.
-        "class_re": None,
+        # Keywords appear as <a class="KeywordPopups" href="..."> with relative
+        # hrefs scattered throughout the document.
+        "class_re": r"KeywordPopups",
     },
     "Tree": {
         "urls": ["/jp/passive-skill-tree/", "/jp/Ascendancy_class"],
@@ -82,9 +98,13 @@ KANA_KANJI_RE = re.compile(r"[぀-ヿ一-鿿]")
 
 
 def class_link_re(class_re: str) -> re.Pattern:
-    """<a class="... {class_re} ..." href="(/jp/)?Slug">JP</a> — relative hrefs allowed."""
+    """<a ... class="...{class_re}..." ... href="(/jp/)?Slug" ...>JP</a>
+
+    Uses a positive lookahead so class can appear before OR after href in the
+    attribute list (poe2db inconsistently orders attributes). Allows relative
+    or /jp/-prefixed hrefs."""
     return re.compile(
-        rf'<a\b[^>]*?\sclass="[^"]*?{class_re}[^"]*?"[^>]*?\shref="(?:/jp/)?([^"#?/][^"#?]*?)"[^>]*>(.*?)</a>',
+        rf'<a\b(?=[^>]*?class="[^"]*?{class_re}[^"]*?")[^>]*?\shref="(?:/jp/)?([^"#?/][^"#?]*?)"[^>]*?>(.*?)</a>',
         re.IGNORECASE | re.DOTALL,
     )
 
@@ -100,10 +120,18 @@ def slug_to_en(slug: str) -> str:
     return unquote(slug).replace("_", " ")
 
 
+_FETCH_CACHE: dict[str, str] = {}
+
+
 def fetch(path: str) -> str:
+    """Get page text. Caches within a single run so categories that share URLs
+    (Items + Uniques use the same body-slot pages) hit the network only once."""
+    if path in _FETCH_CACHE:
+        return _FETCH_CACHE[path]
     url = f"{BASE}{path}"
     r = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=TIMEOUT)
     r.raise_for_status()
+    _FETCH_CACHE[path] = r.text
     return r.text
 
 
@@ -171,14 +199,16 @@ def main(argv: list[str]) -> int:
         merged: dict[str, str] = {}
         pattern = class_link_re(spec["class_re"]) if spec["class_re"] else PLAIN_LINK_RE
         for path in spec["urls"]:
-            print(f"  GET {path}", flush=True)
+            cached = path in _FETCH_CACHE
+            print(f"  {'CACHE' if cached else 'GET  '} {path}", flush=True)
             try:
                 merged.update(scrape_pairs(path, skip_slugs, pattern))
             except requests.HTTPError as e:
                 print(f"    ! HTTP {e.response.status_code} — skipped", file=sys.stderr)
             except requests.RequestException as e:
                 print(f"    ! request failed: {e}", file=sys.stderr)
-            time.sleep(DELAY)
+            if not cached:
+                time.sleep(DELAY)
         out_path = out_dir / f"{category}.lua"
         if not args.dry_run:
             write_lua_dict(out_path, merged, f"{category} dictionary from poe2db.tw/jp/")
