@@ -114,7 +114,7 @@ local CalcsTabClass = newClass("CalcsTab", "UndoHandler", "ControlHost", "Contro
 			end)
 		} },
 		{ label = "Spectre Library", flag = "spectre", { controlName = "mainSkillMinionLibrary",
-			control = new("ButtonControl", nil, {0, 0, 100, 16}, "Manage Spectres...", function()
+			control = new("ButtonControl", nil, {0, 0, 100, 16}, T("Manage Spectres..."), function()
 				self.build:OpenSpectreLibrary()
 			end)
 		} },

@@ -58,7 +58,7 @@ local NotableDBClass = newClass("NotableDBControl", "ListControl", function(self
 	end
 	self.emotionImages = getEmotionImages()
 
-	self.controls.emotionLabel = new("LabelControl", {"TOPLEFT", self.controls.search, "BOTTOMLEFT"}, {0, 6, 100, 16}, "Emotions: ")
+	self.controls.emotionLabel = new("LabelControl", {"TOPLEFT", self.controls.search, "BOTTOMLEFT"}, {0, 6, 100, 16}, T("Emotions: "))
 	self.emotionsAvailable = { }
 	local function emoCheckOnChange(name)
 		self.emotionsAvailable[name] = true

@@ -12,14 +12,14 @@ local ItemListClass = newClass("ItemListControl", "ListControl", function(self, 
 	self.label = "^7All items:"
 	self.defaultText = "^x7F7F7FThis is the list of items that have been added to this build.\nYou can add items to this list by dragging them from\none of the other lists, or by clicking 'Add to build' when\nviewing an item."
 	self.dragTargetList = { }
-	self.controls.delete = new("ButtonControl", {"BOTTOMRIGHT",self,"TOPRIGHT"}, {0, -2, 60, 18}, "Delete", function()
+	self.controls.delete = new("ButtonControl", {"BOTTOMRIGHT",self,"TOPRIGHT"}, {0, -2, 60, 18}, T("Delete"), function()
 		self:OnSelDelete(self.selIndex, self.selValue)
 	end)
 	self.controls.delete.enabled = function()
 		return self.selValue ~= nil
 	end
-	self.controls.deleteAll = new("ButtonControl", {"RIGHT",self.controls.delete,"LEFT"}, {-4, 0, 70, 18}, "Delete All", function()
-		main:OpenConfirmPopup("Delete All", "Are you sure you want to delete all items in this build?", "Delete", function()
+	self.controls.deleteAll = new("ButtonControl", {"RIGHT",self.controls.delete,"LEFT"}, {-4, 0, 70, 18}, T("Delete All"), function()
+		main:OpenConfirmPopup(T("Delete All"), "Are you sure you want to delete all items in this build?", "Delete", function()
 			for _, slot in pairs(itemsTab.slots) do
 				slot:SetSelItemId(0)
 			end
@@ -40,7 +40,7 @@ local ItemListClass = newClass("ItemListControl", "ListControl", function(self, 
 	self.controls.deleteAll.enabled = function()
 		return #self.list > 0
 	end
-	self.controls.deleteUnused = new("ButtonControl", {"RIGHT",self.controls.deleteAll,"LEFT"}, {-4, 0, 100, 18}, "Delete Unused", function()
+	self.controls.deleteUnused = new("ButtonControl", {"RIGHT",self.controls.deleteAll,"LEFT"}, {-4, 0, 100, 18}, T("Delete Unused"), function()
 		local delList = {}
 		for _, itemId in pairs(self.list) do
 			if not itemsTab:GetEquippedSlotForItem(itemsTab.items[itemId]) and not self:FindEquippedItemSocket(itemId, false) and not self:FindSocketedJewel(itemId, false) then
@@ -62,7 +62,7 @@ local ItemListClass = newClass("ItemListControl", "ListControl", function(self, 
 	self.controls.deleteUnused.enabled = function()
 		return #self.list > 0
 	end
-	self.controls.sort = new("ButtonControl", {"RIGHT",self.controls.deleteUnused,"LEFT"}, {-4, 0, 60, 18}, "Sort", function()
+	self.controls.sort = new("ButtonControl", {"RIGHT",self.controls.deleteUnused,"LEFT"}, {-4, 0, 60, 18}, T("Sort"), function()
 		itemsTab:SortItemList()
 	end)
 end)
@@ -200,7 +200,7 @@ function ItemListClass:OnSelDelete(index, itemId)
 	local equipSlot, equipSet = self.itemsTab:GetEquippedSlotForItem(item)
 	if equipSlot then
 		local inSet = equipSet and (" in set '"..(equipSet.title or "Default").."'") or ""
-		main:OpenConfirmPopup("Delete Item", item.name.." is currently equipped in "..equipSlot.label..inSet..".\nAre you sure you want to delete it?", "Delete", function()
+		main:OpenConfirmPopup(T("Delete Item"), item.name.." is currently equipped in "..equipSlot.label..inSet..".\nAre you sure you want to delete it?", "Delete", function()
 			self.itemsTab:DeleteItem(item)
 			self.selIndex = nil
 			self.selValue = nil
@@ -209,7 +209,7 @@ function ItemListClass:OnSelDelete(index, itemId)
 		local equipSet = self:FindEquippedItemSocket(itemId, true)
 		if equipSet then
 			local inSet = equipSet and (" in set '"..(equipSet.title or "Default").."'") or ""
-			main:OpenConfirmPopup("Delete Item", item.name.." is currently equipped in a Socket"..inSet..".\nAre you sure you want to delete it?", "Delete", function()
+			main:OpenConfirmPopup(T("Delete Item"), item.name.." is currently equipped in a Socket"..inSet..".\nAre you sure you want to delete it?", "Delete", function()
 				self.itemsTab:DeleteItem(item)
 				self.selIndex = nil
 				self.selValue = nil
@@ -217,7 +217,7 @@ function ItemListClass:OnSelDelete(index, itemId)
 		else
 			local equipTree = self:FindSocketedJewel(itemId, true)
 			if equipTree then
-				main:OpenConfirmPopup("Delete Item", item.name.." is currently equipped in passive tree '"..equipTree.."'.\nAre you sure you want to delete it?", "Delete", function()
+				main:OpenConfirmPopup(T("Delete Item"), item.name.." is currently equipped in passive tree '"..equipTree.."'.\nAre you sure you want to delete it?", "Delete", function()
 					self.itemsTab:DeleteItem(item)
 					self.selIndex = nil
 					self.selValue = nil

@@ -295,7 +295,7 @@ local PartyTabClass = newClass("PartyTab", "ControlHost", "Control", function(se
 	end
 	self.controls.importCodeDestination = new("DropDownControl", {"TOPLEFT",self.controls.importCodeIn,"BOTTOMLEFT"}, {0, 4, 160, theme.buttonHeight}, partyDestinations)
 	self.controls.importCodeDestination.tooltipText = "Destination for Import/clear\nCurrently Links Skills do not export"
-	self.controls.importCodeGo = new("ButtonControl", {"LEFT",self.controls.importCodeDestination,"RIGHT"}, {8, 0, 160, theme.buttonHeight}, "Import", function()
+	self.controls.importCodeGo = new("ButtonControl", {"LEFT",self.controls.importCodeDestination,"RIGHT"}, {8, 0, 160, theme.buttonHeight}, T("Import"), function()
 		local importCodeFetching = false
 		if self.importCodeSite and not self.importCodeXML then
 			self.importCodeFetching = true
@@ -332,7 +332,7 @@ local PartyTabClass = newClass("PartyTab", "ControlHost", "Control", function(se
 		return (self.width > theme.widthThreshold1) and 0 or 24
 	end
 	
-	self.controls.clear = new("ButtonControl", {"LEFT",self.controls.appendNotReplace,"RIGHT"}, {8, 0, 160, theme.buttonHeight}, "Clear", function() 
+	self.controls.clear = new("ButtonControl", {"LEFT",self.controls.appendNotReplace,"RIGHT"}, {8, 0, 160, theme.buttonHeight}, T("Clear"), function() 
 		clearInputText()
 		wipeTable(self.enemyModList)
 		self.enemyModList = new("ModList")
@@ -346,7 +346,7 @@ local PartyTabClass = newClass("PartyTab", "ControlHost", "Control", function(se
 		return (self.width > theme.widthThreshold1) and 4 or 28
 	end
 	
-	self.controls.removeEffects = new("ButtonControl", {"LEFT",self.controls.ShowAdvanceTools,"RIGHT"}, {8, 0, 160, theme.buttonHeight}, "Disable Party Effects", function() 
+	self.controls.removeEffects = new("ButtonControl", {"LEFT",self.controls.ShowAdvanceTools,"RIGHT"}, {8, 0, 160, theme.buttonHeight}, T("Disable Party Effects"), function() 
 		wipeTable(self.actor)
 		wipeTable(self.enemyModList)
 		self.actor = { Aura = {}, Curse = {}, Warcry = { }, Link = {}, modDB = new("ModDB"), output = { } }
