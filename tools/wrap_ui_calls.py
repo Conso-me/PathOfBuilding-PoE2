@@ -68,6 +68,14 @@ WRAP_PATTERNS = [
         ),
         "OpenConfirmPopup title",
     ),
+    # tooltip:AddLine(size, "literal") — explanatory help text
+    # First arg is the font size (integer), then the literal line.
+    (
+        re.compile(
+            rf'(tooltip:AddLine\s*\(\s*\d+\s*,\s*){LITERAL_SIMPLE}'
+        ),
+        "tooltip:AddLine",
+    ),
 ]
 
 

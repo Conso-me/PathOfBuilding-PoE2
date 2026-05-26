@@ -196,7 +196,7 @@ function buildMode:Init(dbFileName, buildName, buildXML, convertBuild, importLin
 	self.controls.characterLevel:SetText(self.characterLevel)
 	self.controls.characterLevel.tooltipFunc = function(tooltip)
 		if tooltip:CheckForUpdate(self.characterLevel) then
-			tooltip:AddLine(16, "Experience multiplier:")
+			tooltip:AddLine(16, T("Experience multiplier:"))
 			local playerLevel = self.characterLevel
 			local safeZone = 3 + m_floor(playerLevel / 16)
 			for level, expLevel in ipairs(self.data.monsterExperienceLevelMap) do
@@ -375,8 +375,8 @@ function buildMode:Init(dbFileName, buildName, buildXML, convertBuild, importLin
 	--end)
 	--self.controls.similarBuilds.tooltipFunc = function(tooltip)
 	--	tooltip:Clear()
-	--	tooltip:AddLine(16, "Search for builds similar to your current character.")
-	--	tooltip:AddLine(16, "For best results, make sure to select your main item set, tree, and skills before opening the popup.")
+	--	tooltip:AddLine(16, T("Search for builds similar to your current character."))
+	--	tooltip:AddLine(16, T("For best results, make sure to select your main item set, tree, and skills before opening the popup."))
 	--end
 	
 	if buildName == "~~temp~~" then

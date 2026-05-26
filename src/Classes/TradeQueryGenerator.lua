@@ -944,8 +944,8 @@ function TradeQueryGeneratorClass:RequestQuery(slot, context, statWeights, callb
 			-- tooltips do not actually work for labels
 			lastItemAnchor.tooltipFunc = function(tooltip)
 				tooltip:Clear()
-				tooltip:AddLine(16, "Sorts the weights by the stats selected multiplied by a value")
-				tooltip:AddLine(16, "Currently sorting by:")
+				tooltip:AddLine(16, T("Sorts the weights by the stats selected multiplied by a value"))
+				tooltip:AddLine(16, T("Currently sorting by:"))
 				for i, stat in ipairs(statWeights) do
 					if i > 4 then
 						tooltip:AddLine(16, s_format("%s: %.2f", stat.label, stat.weightMult))

@@ -631,10 +631,10 @@ holding Shift will put it in the second.]])
 						tooltip:AddLine(14, "^7"..line)
 					end
 					if mod.level > 1 then
-						tooltip:AddLine(16, "Level: "..mod.level)
+						tooltip:AddLine(16, T("Level: ")..mod.level)
 					end
 					if mod.modTags and #mod.modTags > 0 then
-						tooltip:AddLine(16, "Tags: "..table.concat(mod.modTags, ', '))
+						tooltip:AddLine(16, T("Tags: ")..table.concat(mod.modTags, ', '))
 					end
 				else
 					tooltip:AddLine(16, "^7"..#modList.." Tiers")
@@ -658,10 +658,10 @@ holding Shift will put it in the second.]])
 							end))
 						end
 					end
-					tooltip:AddLine(16, "Level: "..minMod.level.." to "..maxMod.level)
+					tooltip:AddLine(16, T("Level: ")..minMod.level.." to "..maxMod.level)
 					-- Assuming that all mods have the same tags
 					if maxMod.modTags and #maxMod.modTags > 0 then
-						tooltip:AddLine(16, "Tags: "..table.concat(maxMod.modTags, ', '))
+						tooltip:AddLine(16, T("Tags: ")..table.concat(maxMod.modTags, ', '))
 					end
 				end
 				local mod = self.displayItem.affixes[value.modId or modList[1]]
@@ -762,7 +762,7 @@ holding Shift will put it in the second.]])
 					tooltip:AddLine(14, line)
 				end
 				if mod.level > 1 then
-					tooltip:AddLine(16, "Level: "..mod.level)
+					tooltip:AddLine(16, T("Level: ")..mod.level)
 				end
 			end
 		end
@@ -2025,13 +2025,13 @@ function ItemsTabClass:EditDisplayItemText(alsoAddItem)
 		if item.base then
 			self:AddItemTooltip(tooltip, item, nil, true)
 		else
-			tooltip:AddLine(14, "The item is invalid.")
-			tooltip:AddLine(14, "Check that the item's title and base name are in the correct format.")
-			tooltip:AddLine(14, "For Rare and Unique items, the first 2 lines must be the title and base name. E.g.:")
-			tooltip:AddLine(14, "Abberath's Horn")
-			tooltip:AddLine(14, "Goat's Horn")
-			tooltip:AddLine(14, "For Normal and Magic items, the base name must be somewhere in the first line. E.g.:")
-			tooltip:AddLine(14, "Scholar's Platinum Kris of Joy")
+			tooltip:AddLine(14, T("The item is invalid."))
+			tooltip:AddLine(14, T("Check that the item's title and base name are in the correct format."))
+			tooltip:AddLine(14, T("For Rare and Unique items, the first 2 lines must be the title and base name. E.g.:"))
+			tooltip:AddLine(14, T("Abberath's Horn"))
+			tooltip:AddLine(14, T("Goat's Horn"))
+			tooltip:AddLine(14, T("For Normal and Magic items, the base name must be somewhere in the first line. E.g.:"))
+			tooltip:AddLine(14, T("Scholar's Platinum Kris of Joy"))
 		end
 	end	
 	controls.cancel = new("ButtonControl", nil, {45, 470, 80, 20}, T("Cancel"), function()

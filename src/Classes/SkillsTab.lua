@@ -171,15 +171,15 @@ local SkillsTabClass = newClass("SkillsTab", "UndoHandler", "ControlHost", "Cont
 	self.controls.groupSlot.tooltipFunc = function(tooltip, mode, index, value)
 		tooltip:Clear()
 		if mode == "OUT" or index == 1 then
-			tooltip:AddLine(16, "Select the item in which this skill is socketed.")
-			tooltip:AddLine(16, "This will allow the skill to benefit from modifiers on the item that affect socketed gems.")
+			tooltip:AddLine(16, T("Select the item in which this skill is socketed."))
+			tooltip:AddLine(16, T("This will allow the skill to benefit from modifiers on the item that affect socketed gems."))
 		else
 			local slot = self.build.itemsTab.slots[value.slotName]
 			local ttItem = self.build.itemsTab.items[slot.selItemId]
 			if ttItem then
 				self.build.itemsTab:AddItemTooltip(tooltip, ttItem, slot)
 			else
-				tooltip:AddLine(16, "No item is equipped in this slot.")
+				tooltip:AddLine(16, T("No item is equipped in this slot."))
 			end
 		end
 	end

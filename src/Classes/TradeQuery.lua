@@ -294,9 +294,9 @@ on trade site to work on other leagues and realms)]]
 	end
 	self.controls.fetchCountEdit.tooltipFunc = function(tooltip)
 		tooltip:Clear()
-		tooltip:AddLine(16, "Specify maximum number of item pages to retrieve per search from PoE Trade.")
-		tooltip:AddLine(16, "Each page fetches up to 10 items.")
-		tooltip:AddLine(16, "Acceptable Range is: 1 to 10")
+		tooltip:AddLine(16, T("Specify maximum number of item pages to retrieve per search from PoE Trade."))
+		tooltip:AddLine(16, T("Each page fetches up to 10 items."))
+		tooltip:AddLine(16, T("Acceptable Range is: 1 to 10"))
 	end
 
 	-- Stat sort popup button
@@ -311,8 +311,8 @@ on trade site to work on other leagues and realms)]]
 	end)
 	self.controls.StatWeightMultipliersButton.tooltipFunc = function(tooltip)
 		tooltip:Clear()
-		tooltip:AddLine(16, "Sorts the weights by the stats selected multiplied by a value")
-		tooltip:AddLine(16, "Currently sorting by:")
+		tooltip:AddLine(16, T("Sorts the weights by the stats selected multiplied by a value"))
+		tooltip:AddLine(16, T("Currently sorting by:"))
 		for _, stat in ipairs(self.statSortSelectionList) do
 			tooltip:AddLine(16, s_format("%s: %.2f", stat.label, stat.weightMult))
 		end
@@ -616,7 +616,7 @@ function TradeQueryClass:SetCurrencyConversionButton()
 		self.controls.updateCurrencyConversion.enabled = false
 		self.controls.updateCurrencyConversion.tooltipFunc = function(tooltip)
 			tooltip:Clear()
-			tooltip:AddLine(16, "Currency Conversion rates are pulled from PoE Ninja")
+			tooltip:AddLine(16, T("Currency Conversion rates are pulled from PoE Ninja"))
 		end
 		return
 	end
@@ -647,10 +647,10 @@ function TradeQueryClass:SetCurrencyConversionButton()
 			self.pbFileTimestampDiff[self.controls.league.selIndex] = get_time() - self.lastCurrencyFileTime[self.controls.league.selIndex]
 		end
 		if self.pbFileTimestampDiff[self.controls.league.selIndex] == nil or self.pbFileTimestampDiff[self.controls.league.selIndex] >= 3600 then
-			tooltip:AddLine(16, "Currency Conversion rates are pulled from PoE Ninja")
-			tooltip:AddLine(16, "Updates are limited to once per hour and not necessary more than once per day")
+			tooltip:AddLine(16, T("Currency Conversion rates are pulled from PoE Ninja"))
+			tooltip:AddLine(16, T("Updates are limited to once per hour and not necessary more than once per day"))
 		elseif self.pbFileTimestampDiff[self.controls.league.selIndex] ~= nil and self.pbFileTimestampDiff[self.controls.league.selIndex] < 3600 then
-			tooltip:AddLine(16, "Conversion Rates are less than an hour old (" .. tostring(self.pbFileTimestampDiff[self.controls.league.selIndex]) .. " seconds old)")
+			tooltip:AddLine(16, T("Conversion Rates are less than an hour old (") .. tostring(self.pbFileTimestampDiff[self.controls.league.selIndex]) .. " seconds old)")
 		end
 	end
 end
@@ -907,7 +907,7 @@ function TradeQueryClass:PriceItemRowDisplay(row_idx, top_pane_alignment_ref, ro
 	controls["uri"..row_idx].tooltipFunc = function(tooltip)
 		tooltip:Clear()
 		if controls["uri"..row_idx].buf:find('^'..self.hostName..'trade2/search/') ~= nil then
-			tooltip:AddLine(16, "Control + click to open in web-browser")
+			tooltip:AddLine(16, T("Control + click to open in web-browser"))
 		end
 	end
 	controls["priceButton"..row_idx] = new("ButtonControl", { "TOPLEFT", controls["uri"..row_idx], "TOPRIGHT"}, {8, 0, 100, row_height}, T("Price Item"),
@@ -933,9 +933,9 @@ function TradeQueryClass:PriceItemRowDisplay(row_idx, top_pane_alignment_ref, ro
 	controls["priceButton"..row_idx].tooltipFunc = function(tooltip)
 		tooltip:Clear()
 		if not main.POESESSID or main.POESESSID == "" then
-			tooltip:AddLine(16, "You must set your POESESSID to use search feature")
+			tooltip:AddLine(16, T("You must set your POESESSID to use search feature"))
 		elseif not controls["uri"..row_idx].validURL then
-			tooltip:AddLine(16, "Enter a valid trade URL")
+			tooltip:AddLine(16, T("Enter a valid trade URL"))
 		end
 	end
 	local clampItemIndex = function(index)
@@ -1012,7 +1012,7 @@ function TradeQueryClass:PriceItemRowDisplay(row_idx, top_pane_alignment_ref, ro
 		tooltip:Clear()
 		if self.itemIndexTbl[row_idx] and self.resultTbl[row_idx][self.itemIndexTbl[row_idx]].item_string then
 			tooltip.center = true
-			tooltip:AddLine(16, "Copies the item purchase whisper to the clipboard")
+			tooltip:AddLine(16, T("Copies the item purchase whisper to the clipboard"))
 		end
 	end
 end

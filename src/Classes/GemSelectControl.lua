@@ -485,11 +485,11 @@ function GemSelectClass:Draw(viewPort, noTooltip)
 			if cursorX > (x + width - 18) then
 				colorS = 1
 				self.tooltip:Clear()
-				self.tooltip:AddLine(16, "Only show Support gems")
+				self.tooltip:AddLine(16, T("Only show Support gems"))
 			elseif (cursorX > (x + width - 40) and cursorX < (cursorX + width - 20)) then
 				colorA = 1
 				self.tooltip:Clear()
-				self.tooltip:AddLine(16, "Only show Active gems")
+				self.tooltip:AddLine(16, T("Only show Active gems"))
 			end
 
 			-- support shortcut
