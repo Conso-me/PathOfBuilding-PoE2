@@ -121,6 +121,22 @@ git commit -m "i18n: refresh translations from poe2db.tw"
 - `coverage_report.py` で UI カバレッジ表示
 - `extract_strings.py --dry-run` で抽出ツールがクラッシュしないか確認
 
+### ワンコマンド再生成
+
+```bash
+tools/regenerate_all.sh            # scrape + wrap + extract + coverage を実行
+tools/regenerate_all.sh --dry      # 全ステップ dry-run プレビュー
+```
+
+upstream sync 直後・週次バッチで便利。
+
+### override の追加
+
+poe2db の翻訳が違和感ある場合は `src/Locale/ja_JP/_overrides/` 配下に該当ファイル
+（Skills.lua / Items.lua / Stats.lua 等）を作って上書きエントリを書く。詳細は
+[`_overrides/README.md`](../../src/Locale/ja_JP/_overrides/README.md)。
+override は **scraper の再実行で消えない** ことが設計の肝。
+
 ### リリースタグ
 
 upstream バージョン + `-ja.N` 形式:
@@ -128,11 +144,36 @@ upstream バージョン + `-ja.N` 形式:
 - `v0.15.0-ja.2` — 同 upstream 上の翻訳修正パッチ
 - `v0.16.0-ja.1` — upstream v0.16.0 ベースの新規
 
+## 達成状況（Phase 0–15）
+
+| Phase | 内容 | 状態 |
+|------|------|------|
+| 0 | Fork + 3層誤PR防御 + `ja` ブランチ | ✅ |
+| 1 | Locale インフラ（T/SkillT/ItemT/StatT/KeywordT/ModFormat） | ✅ |
+| 2 | poe2db Skills/Items/Tree スクレイパ | ✅ |
+| 3 | UI 文字列抽出ツール | ✅ |
+| 4 | glossary.md + README-ja.md | ✅ |
+| 5 | UI ラップ自動化（228 wraps, 100% 翻訳） | ✅ |
+| 6 | Skill/Item 表示時ラップ + ModFormat 中央配線 | ✅ |
+| 7 | Uniques + Keywords スクレイプ, Stats シード | ✅ |
+| 9 | CI workflows (sync / refresh / test) | ✅ |
+| 10 | BuildDisplayStats 205 件 StatT ラップ | ✅ |
+| 11 | `_overrides/` 仕組み | ✅ |
+| 13 | tooltip:AddLine ラップ（+42 sites） | ✅ |
+| 14 | Mods scraper（16 templates） | ✅ |
+| 15 | regenerate_all.sh + coverage 計測 | ✅ |
+
+**現在の翻訳ペア合計: 2,753 件**（UI 168 + Skills 917 + Items 768 + Uniques 353 + Stats 250 + Keywords 224 + Tree 73 + Mods 16 + 各カテゴリ override）
+
+**UI カバレッジ: 99%**（294/297 call sites、残りは PoE1 アイテム例示で意図的に英語維持）
+**Stats カバレッジ: 100%**（205/205 call sites）
+
 ## 既知の制約
 
-- **Uniques / Keywords / Stats / Mods 辞書未取得** — poe2db の HTML 構造解析が必要。詳細は [scraping-status.md](scraping-status.md)
-- **UI ラップ未配線** — `DrawString(..., "...")` → `DrawString(..., T("..."))` の置換作業は未着手（Phase 5）
-- **Mod テンプレート未対応** — `+20 to maximum Life` 等の動的 mod 翻訳は Phase 7+
+- **一般的な item-roll mod 未対応** — 「+X to maximum Life」「Adds N to M Fire Damage」系は item-base ページ側に分散しており、現状スクレイパ未対応
+- **Tree 通常パッシブノード未対応** — 73 件は上位職のみ
+- **ロケール切替 UI 未実装** — ja_JP 固定（en にも切替可能なように Locale.lua 側は設計済、設定 UI は未着手）
+- **gem 検索の逆引き** — 日本語名でタイプして英語の gem を絞り込むのは未対応（タイプは英語、表示は日本語の運用）
 
 ## 参考
 

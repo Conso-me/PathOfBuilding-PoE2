@@ -83,9 +83,15 @@ def main(argv: list[str]) -> int:
         print(f"  {label:<10s}: {sum(calls.values())} call sites")
 
     print("\n=== Data dictionaries (Layer 2) ===")
-    for name in ("Skills", "Items", "Uniques", "Stats", "Keywords", "Tree", "Mods"):
+    for name in ("Skills", "Items", "Uniques", "Stats", "Keywords", "Tree"):
         keys = load_keys(locale_dir / f"{name}.lua")
         print(f"  {name:<10s}: {len(keys)} entries")
+    # Mods.lua uses a different shape — array of {en=..., ja=...} pattern entries.
+    mods_path = locale_dir / "Mods.lua"
+    mods_count = 0
+    if mods_path.exists():
+        mods_count = len(re.findall(r'\{\s*en\s*=\s*"', mods_path.read_text(encoding="utf-8")))
+    print(f"  Mods      : {mods_count} patterns")
 
     if args.missing and (missing_t or _missing_stat):
         print(f"\n=== Untranslated keys (by call frequency) ===")
