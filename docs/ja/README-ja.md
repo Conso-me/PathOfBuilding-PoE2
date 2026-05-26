@@ -85,16 +85,41 @@ python3 tools/extract_strings.py
 
 ### upstream の取り込み
 
+**自動（推奨）**: `.github/workflows/ja-sync-upstream.yml` が毎週月曜 00:00 UTC に動き、upstream/dev の新規コミットを `ja` ブランチに merge してレビュー用 PR を作る。手動 trigger も `workflow_dispatch` で可能。
+
+**手動の場合**:
 ```bash
 git fetch upstream
 git checkout ja
 git merge upstream/dev          # rebase ではなく merge
 # コンフリクトがあれば解決（Locale/ 以外で発生するはず）
-python3 tools/extract_strings.py    # 新規UI候補チェック
+python3 tools/wrap_ui_calls.py      # 新規 UI 呼び出しを T() でラップ
+python3 tools/extract_strings.py    # 新規 UI 候補をキュー更新
+python3 tools/coverage_report.py    # カバレッジ確認
 git add -A
 git commit -m "sync: merge upstream/dev @<sha>"
 git push origin ja
 ```
+
+### 翻訳辞書の更新
+
+**自動（推奨）**: `.github/workflows/ja-refresh-translations.yml` が毎週日曜 18:00 UTC に動き、poe2db.tw から再スクレイプして変更があれば PR を作る。
+
+**手動の場合**:
+```bash
+python3 tools/scrape_poe2db.py
+git diff src/Locale/ja_JP/
+git add src/Locale/ja_JP/
+git commit -m "i18n: refresh translations from poe2db.tw"
+```
+
+### テスト
+
+`ja` ブランチへの push / PR で `.github/workflows/ja-test.yml` が動き:
+- upstream の Busted テスト suite を実行（翻訳作業で計算ロジックが壊れていないか）
+- `luac -p` で全 Locale Lua ファイルの構文チェック
+- `coverage_report.py` で UI カバレッジ表示
+- `extract_strings.py --dry-run` で抽出ツールがクラッシュしないか確認
 
 ### リリースタグ
 

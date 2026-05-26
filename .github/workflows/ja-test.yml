@@ -1,0 +1,49 @@
+name: JA / Tests
+
+# Runs upstream's Busted test suite plus our translation tooling so regressions
+# from auto-wrap, locale changes, or dictionary refreshes are caught early.
+
+on:
+  push:
+    branches: [ ja ]
+  pull_request:
+    branches: [ ja ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  busted:
+    name: Upstream Busted tests
+    runs-on: ubuntu-latest
+    container: ghcr.io/pathofbuildingcommunity/pathofbuilding-tests:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run busted
+        run: busted --lua=luajit
+
+  tooling:
+    name: Translation tooling smoke checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Lint Lua dictionaries (syntactic sanity)
+        run: |
+          sudo apt-get update && sudo apt-get install -y lua5.4
+          for f in src/Locale.lua src/Locale/ja_JP/*.lua; do
+            echo "--- $f"
+            luac -p "$f"
+          done
+
+      - name: UI coverage report (informational)
+        run: python3 tools/coverage_report.py
+
+      - name: Extract strings (verifies extractor does not crash)
+        run: python3 tools/extract_strings.py --dry-run
