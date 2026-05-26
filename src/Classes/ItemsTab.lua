@@ -677,7 +677,7 @@ holding Shift will put it in the second.]])
 					if node.sd[1] then
 						tooltip:AddLine(16, "")
 						for i, line in ipairs(node.sd) do
-							tooltip:AddLine(16, ((node.mods[i].extra or not node.mods[i].list) and colorCodes.UNSUPPORTED or colorCodes.MAGIC)..line)
+							tooltip:AddLine(16, ((node.mods[i].extra or not node.mods[i].list) and colorCodes.UNSUPPORTED or colorCodes.MAGIC)..ModFormat(line))
 						end
 					end
 
@@ -2568,10 +2568,10 @@ function ItemsTabClass:AddItemTooltip(tooltip, item, slot, dbMode)
 	tooltip.center = true
 	tooltip.color = rarityCode
 	if item.title then
-		tooltip:AddLine(20, rarityCode..item.title)
-		tooltip:AddLine(20, rarityCode..item.baseName:gsub(" %(.+%)",""))
+		tooltip:AddLine(20, rarityCode..ItemT(item.title))
+		tooltip:AddLine(20, rarityCode..ItemT(item.baseName:gsub(" %(.+%)","")))
 	else
-		tooltip:AddLine(20, rarityCode..item.namePrefix..item.baseName:gsub(" %(.+%)","")..item.nameSuffix)
+		tooltip:AddLine(20, rarityCode..item.namePrefix..ItemT(item.baseName:gsub(" %(.+%)",""))..item.nameSuffix)
 	end
 
 	tooltip:AddSeparator(10)
@@ -2701,7 +2701,7 @@ function ItemsTabClass:AddItemTooltip(tooltip, item, slot, dbMode)
 			main:StatColor(flaskData.chargesMax, base.flask.chargesMax), flaskData.chargesMax
 		))
 		for _, modLine in pairs(item.buffModLines) do
-			tooltip:AddLine(16, (modLine.extra and colorCodes.UNSUPPORTED or colorCodes.MAGIC) .. modLine.line)
+			tooltip:AddLine(16, (modLine.extra and colorCodes.UNSUPPORTED or colorCodes.MAGIC) .. ModFormat(modLine.line))
 		end
 	elseif base.charm then
 		-- Charm-specific info
@@ -2713,7 +2713,7 @@ function ItemsTabClass:AddItemTooltip(tooltip, item, slot, dbMode)
 			main:StatColor(charmData.chargesMax, base.charm.chargesMax), charmData.chargesMax
 		))
 		for _, modLine in pairs(item.buffModLines) do
-			tooltip:AddLine(16, (modLine.extra and colorCodes.UNSUPPORTED or colorCodes.MAGIC) .. modLine.line)
+			tooltip:AddLine(16, (modLine.extra and colorCodes.UNSUPPORTED or colorCodes.MAGIC) .. ModFormat(modLine.line))
 		end
 	elseif item.type == "Jewel" then
 		-- Jewel-specific info

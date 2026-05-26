@@ -91,7 +91,7 @@ function ItemSlotClass:Populate()
 	for _, item in pairs(self.itemsTab.items) do
 		if self.itemsTab:IsItemValidForSlot(item, self.slotName) then
 			t_insert(self.items, item.id)
-			t_insert(self.list, colorCodes[item.rarity]..item.name)
+			t_insert(self.list, colorCodes[item.rarity]..ItemT(item.name))
 			if item.id == self.selItemId then
 				self.selIndex = #self.list
 			end

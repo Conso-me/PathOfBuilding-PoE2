@@ -1513,7 +1513,7 @@ function calcs.perform(env, skipEHP)
 						}
 						if reqSource.source == "Item" then
 							local item = reqSource.sourceItem
-							row.sourceName = colorCodes[item.rarity]..item.name
+							row.sourceName = colorCodes[item.rarity]..ItemT(item.name)
 							row.sourceNameTooltip = function(tooltip)
 								env.build.itemsTab:AddItemTooltip(tooltip, item, reqSource.sourceSlot)
 							end

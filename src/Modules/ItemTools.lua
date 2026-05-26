@@ -332,7 +332,7 @@ function itemLib.formatModLine(modLine, dbMode)
 	else
 		colorCode = (modLine.enchant and colorCodes.ENCHANTED) or (modLine.fractured and colorCodes.FRACTURED) or (modLine.custom and colorCodes.CUSTOM) or colorCodes.MAGIC
 	end
-	return colorCode..line
+	return colorCode..ModFormat(line)
 end
 
 itemLib.wiki = {

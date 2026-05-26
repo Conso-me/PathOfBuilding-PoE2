@@ -747,7 +747,7 @@ function TradeQueryClass:UpdateControlsWithItems(row_idx)
 	for result_index = 1, #self.resultTbl[row_idx] do
 		local pb_index = self.sortedResultTbl[row_idx][result_index].index
 		local item = new("Item", self.resultTbl[row_idx][pb_index].item_string)
-		table.insert(dropdownLabels, colorCodes[item.rarity]..item.name)
+		table.insert(dropdownLabels, colorCodes[item.rarity]..ItemT(item.name))
 	end
 	self.controls["resultDropdown".. row_idx].selIndex = 1
 	self.controls["resultDropdown".. row_idx]:SetList(dropdownLabels)
@@ -952,7 +952,7 @@ function TradeQueryClass:PriceItemRowDisplay(row_idx, top_pane_alignment_ref, ro
 	local dropdownLabels = {}
 	for _, sortedResult in ipairs(self.sortedResultTbl[row_idx] or {}) do
 		local item = new("Item", self.resultTbl[row_idx][sortedResult.index].item_string)
-		table.insert(dropdownLabels, colorCodes[item.rarity]..item.name)
+		table.insert(dropdownLabels, colorCodes[item.rarity]..ItemT(item.name))
 	end
 	controls["resultDropdown"..row_idx] = new("DropDownControl", { "TOPLEFT", controls["changeButton"..row_idx], "TOPRIGHT"}, {8, 0, 325, row_height}, dropdownLabels, function(index)
 		self.itemIndexTbl[row_idx] = self.sortedResultTbl[row_idx][index].index

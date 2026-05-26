@@ -395,7 +395,7 @@ function CalcBreakdownClass:AddModSection(sectionData, modList)
 			local itemId = row.mod.source:match("Item:(%d+):.+")
 			local item = build.itemsTab.items[tonumber(itemId)]
 			if item then
-				row.sourceName = colorCodes[item.rarity]..item.name
+				row.sourceName = colorCodes[item.rarity]..ItemT(item.name)
 				row.sourceNameTooltip = function(tooltip)
 					local args = row.mod.sourceSlot
 					if row.mod.sourceSlot == "Jewel" and row.mod.sourceSlotNum ~= nil and build.spec.nodes[row.mod.sourceSlotNum] and build.spec.nodes[row.mod.sourceSlotNum].containJewelSocket then
