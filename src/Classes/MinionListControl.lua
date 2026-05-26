@@ -48,7 +48,7 @@ end
 function MinionListClass:AddValueTooltip(tooltip, index, minionId)
 	if tooltip:CheckForUpdate(minionId) then
 		local minion = self.data.minions[minionId]
-		tooltip:AddLine(18, "^7"..minion.name)
+		tooltip:AddLine(18, "^7"..SkillT(minion.name))
 		tooltip:AddLine(14, s_format("^7Life Multiplier: x%.2f", minion.life))
 		if minion.energyShield then
 			tooltip:AddLine(14, s_format("^7Energy Shield: %d%% of base Life", minion.energyShield * 100))
@@ -70,7 +70,7 @@ function MinionListClass:AddValueTooltip(tooltip, index, minionId)
 
 		for _, skillId in ipairs(minion.skillList) do
 			if self.data.skills[skillId] then
-				tooltip:AddLine(14, "^7Skill: "..self.data.skills[skillId].name)
+				tooltip:AddLine(14, "^7"..T("Skill")..": "..SkillT(self.data.skills[skillId].name))
 			end
 		end
 	end

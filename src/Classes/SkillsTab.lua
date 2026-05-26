@@ -756,7 +756,7 @@ function SkillsTabClass:CreateGemSlot(index)
 		end
 		-- Function for both granted effect and secondary such as vaal
 		local addQualityLines = function(qualityList, grantedEffect)
-			tooltip:AddLine(18, colorCodes.GEM..grantedEffect.name)
+			tooltip:AddLine(18, colorCodes.GEM..SkillT(grantedEffect.name))
 			-- Hardcoded to use 20% quality instead of grabbing from gem, this is for consistency and so we always show something
 			tooltip:AddLine(16, colorCodes.NORMAL.."At +20% Quality:")
 			for k, qual in pairs(qualityList) do

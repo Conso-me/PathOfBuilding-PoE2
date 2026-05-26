@@ -347,7 +347,7 @@ function GemSelectClass:UpdateGem(setText, addUndo)
 	end
 	self.gemName = self.gemId and self.gems[self.gemId].name or ""
 	if setText then
-		self:SetText(self.gemName)
+		self:SetText(SkillT(self.gemName))
 	end
 	self.gemChangeFunc(self.gemId and self.gemId:gsub("%w+:", ""), self:GetQualityType(self.gemId), addUndo and self.gemName ~= self.initialBuf)
 end
@@ -529,7 +529,7 @@ function GemSelectClass:AddGemTooltip(gemInstance)
 	local grantedEffect = gemInstance.gemData.grantedEffect
 	local additionalEffects = gemInstance.gemData.additionalGrantedEffects
 
-	self.tooltip:AddLine(20, colorCodes.GEM .. grantedEffect.name)
+	self.tooltip:AddLine(20, colorCodes.GEM .. SkillT(grantedEffect.name))
 	self.tooltip:AddSeparator(10)
 	self.tooltip:AddLine(18, colorCodes.NORMAL .. gemInstance.gemData.gemType)
 	if gemInstance.gemData.tagString ~= "" then
@@ -545,7 +545,7 @@ function GemSelectClass:AddGemTooltip(gemInstance)
 		if not additional.support then
 			if additional.name ~= "" then
 				self.tooltip:AddSeparator(10)
-				self.tooltip:AddLine(20, colorCodes.GEM .. additional.name)
+				self.tooltip:AddLine(20, colorCodes.GEM .. SkillT(additional.name))
 			end
 			self.tooltip:AddSeparator(10)
 			self:AddGrantedEffectInfo(gemInstance, additional)
@@ -771,7 +771,7 @@ function GemSelectClass:OnKeyDown(key, doubleClick)
 			if self.hoverSel and self.gems[self.list[self.hoverSel]] then
 				self.dropped = false
 				self.selIndex = self.hoverSel
-				self:SetText(self.gems[self.list[self.selIndex]].name)
+				self:SetText(SkillT(self.gems[self.list[self.selIndex]].name))
 				self:UpdateGem(false, true)
 				return
 			end
@@ -797,7 +797,7 @@ function GemSelectClass:OnKeyDown(key, doubleClick)
 		elseif key == "DOWN" then
 			if self.selIndex < #self.list and not self.noMatches then
 				self.selIndex = self.selIndex + 1
-				self:SetText(self.gems[self.list[self.selIndex]].name)
+				self:SetText(SkillT(self.gems[self.list[self.selIndex]].name))
 				self:UpdateGem()
 				self:ScrollSelIntoView()
 			end
@@ -807,7 +807,7 @@ function GemSelectClass:OnKeyDown(key, doubleClick)
 				if self.selIndex == 0 then
 					self:SetText(self.searchStr)
 				else
-					self:SetText(self.gems[self.list[self.selIndex]].name)
+					self:SetText(SkillT(self.gems[self.list[self.selIndex]].name))
 				end
 				self:UpdateGem()
 				self:ScrollSelIntoView()

@@ -2549,7 +2549,7 @@ function ItemsTabClass:AddItemSetTooltip(tooltip, itemSet)
 		if not slot.nodeId then
 			local item = self.items[itemSet[slot.slotName].selItemId]
 			if item then
-				tooltip:AddLine(16, s_format("^7%s: %s%s", slot.slotName, colorCodes[item.rarity], item.name))
+				tooltip:AddLine(16, s_format("^7%s: %s%s", slot.slotName, colorCodes[item.rarity], ItemT(item.name)))
 			end
 		end
 	end

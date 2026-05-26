@@ -57,7 +57,7 @@ function SharedItemSetListClass:AddValueTooltip(tooltip, index, sharedItemSet)
 			local slotName = slot.slotName
 			local item = sharedItemSet.slots[slotName]
 			if item then
-				tooltip:AddLine(16, s_format("^7%s: %s%s", self.itemsTab.slots[slotName].label, colorCodes[item.rarity], item.name))
+				tooltip:AddLine(16, s_format("^7%s: %s%s", self.itemsTab.slots[slotName].label, colorCodes[item.rarity], ItemT(item.name)))
 			end
 		end
 	end
