@@ -16,6 +16,8 @@ local Locale = { }
 local current = "ja_JP"
 local cache = { }
 local modCache = { }
+local T_MAP = { }
+local T_MAP_built = false
 
 -- loadDict merges two sources for the given category:
 --   1. src/Locale/<locale>/<name>.lua          — base dictionary (auto-scraped
@@ -44,10 +46,34 @@ local function loadDict(locale, name)
 	return cache[locale][name]
 end
 
+-- Build a single flat lookup table merging all category dicts.
+-- Used by the DrawString hook (JaText) to translate at render time
+-- instead of at per-callsite T() wrappers.
+-- Iteration order = priority: later entries win on key collision.
+-- Items is last to preserve the original ItemT() Items→Uniques fallback.
+local function buildTMap()
+	if T_MAP_built then return T_MAP end
+	T_MAP = { }
+	for _, name in ipairs({"UI", "Skills", "Stats", "Keywords", "Tree", "Uniques", "Items"}) do
+		local d = loadDict(current, name)
+		for k, v in pairs(d) do
+			T_MAP[k] = v
+		end
+	end
+	T_MAP_built = true
+	return T_MAP
+end
+
+function Locale.GetTMap()
+	return buildTMap()
+end
+
 function Locale.SetLocale(locale)
 	current = locale
 	cache[locale] = nil
 	modCache[locale] = nil
+	T_MAP = { }
+	T_MAP_built = false
 end
 
 function Locale.GetLocale()
