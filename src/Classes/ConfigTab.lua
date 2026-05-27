@@ -47,7 +47,7 @@ local ConfigTabClass = newClass("ConfigTab", "UndoHandler", "ControlHost", "Cont
 		return #self.configSetOrderList > 1
 	end
 	self.controls.setLabel = new("LabelControl", { "RIGHT", self.controls.setSelect, "LEFT" }, { -2, 0, 0, 16 }, "^7Config set:")
-	self.controls.setManage = new("ButtonControl", { "LEFT", self.controls.setSelect, "RIGHT" }, { 4, 0, 90, 20 }, T("Manage..."), function()
+	self.controls.setManage = new("ButtonControl", { "LEFT", self.controls.setSelect, "RIGHT" }, { 4, 0, 90, 20 }, "Manage...", function()
 		self:OpenConfigSetManagePopup()
 	end)
 
@@ -936,9 +936,9 @@ function ConfigTabClass:RestoreUndoState(state)
 end
 
 function ConfigTabClass:OpenConfigSetManagePopup()
-	main:OpenPopup(370, 290, T("Manage Config Sets"), {
+	main:OpenPopup(370, 290, "Manage Config Sets", {
 		new("ConfigSetListControl", nil, {0, 50, 350, 200}, self),
-		new("ButtonControl", nil, {0, 260, 90, 20}, T("Done"), function()
+		new("ButtonControl", nil, {0, 260, 90, 20}, "Done", function()
 			main:ClosePopup()
 		end),
 	})

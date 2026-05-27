@@ -15,7 +15,7 @@ local MinionListClass = newClass("MinionListControl", "ListControl", function(se
 	if dest then
 		self.dragTargetList = { dest }
 		self.label = "^7Available Spectres:"
-		self.controls.add = new("ButtonControl", {"BOTTOMRIGHT",self,"TOPRIGHT"}, {0, -2, 60, 18}, T("Add"), function()
+		self.controls.add = new("ButtonControl", {"BOTTOMRIGHT",self,"TOPRIGHT"}, {0, -2, 60, 18}, "Add", function()
 			self:AddSel()
 		end)
 		self.controls.add.enabled = function()
@@ -23,7 +23,7 @@ local MinionListClass = newClass("MinionListControl", "ListControl", function(se
 		end
 	else
 		self.label = "^7Spectres in Build:"
-		self.controls.delete = new("ButtonControl", {"BOTTOMRIGHT",self,"TOPRIGHT"}, {0, -2, 60, 18}, T("Remove"), function()
+		self.controls.delete = new("ButtonControl", {"BOTTOMRIGHT",self,"TOPRIGHT"}, {0, -2, 60, 18}, "Remove", function()
 			self:OnSelDelete(self.selIndex, self.selValue)
 		end)
 		self.controls.delete.enabled = function()
@@ -70,7 +70,7 @@ function MinionListClass:AddValueTooltip(tooltip, index, minionId)
 
 		for _, skillId in ipairs(minion.skillList) do
 			if self.data.skills[skillId] then
-				tooltip:AddLine(14, "^7"..T("Skill")..": "..SkillT(self.data.skills[skillId].name))
+				tooltip:AddLine(14, "^7".."Skill"..": "..SkillT(self.data.skills[skillId].name))
 			end
 		end
 	end

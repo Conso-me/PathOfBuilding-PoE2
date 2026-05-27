@@ -384,7 +384,7 @@ function CalcBreakdownClass:AddModSection(sectionData, modList)
 			-- No modifier source specified, add the source type to the table
 			row.source = sourceType
 			row.sourceTooltip = function(tooltip)
-				tooltip:AddLine(16, T("Total from ")..sourceType..":")
+				tooltip:AddLine(16, "Total from "..sourceType..":")
 				for _, line in ipairs(sourceTotals[sourceType]) do
 					tooltip:AddLine(14, line)
 				end

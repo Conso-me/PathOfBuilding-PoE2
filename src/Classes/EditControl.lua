@@ -71,7 +71,7 @@ local EditClass = newClass("EditControl", "ControlHost", "Control", "UndoHandler
 			self:OnKeyUp("UP")
 		end)
 	elseif clearable then
-		self.controls.buttonClear = new("ButtonControl", {"RIGHT",self,"RIGHT"}, {-2, 0, buttonSize, buttonSize}, T("x"), function()
+		self.controls.buttonClear = new("ButtonControl", {"RIGHT",self,"RIGHT"}, {-2, 0, buttonSize, buttonSize}, "x", function()
 			self:SetText("", true)
 		end)
 		self.controls.buttonClear.shown = function() return #self.buf > 0 and self:IsMouseInBounds() end

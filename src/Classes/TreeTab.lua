@@ -54,11 +54,11 @@ local TreeTabClass = newClass("TreeTab", "ControlHost", function(self, build)
 			local spec = self.specList[selIndex]
 			if spec then
 				local used, ascUsed, secondaryAscUsed, sockets = spec:CountAllocNodes()
-				tooltip:AddLine(16, T("Class: ")..spec.curClassName)
-				tooltip:AddLine(16, T("Ascendancy: ")..spec.curAscendClassName)
-				tooltip:AddLine(16, T("Points used: ")..used)
+				tooltip:AddLine(16, "Class: "..spec.curClassName)
+				tooltip:AddLine(16, "Ascendancy: "..spec.curAscendClassName)
+				tooltip:AddLine(16, "Points used: "..used)
 				if sockets > 0 then
-					tooltip:AddLine(16, T("Jewel sockets: ")..sockets)
+					tooltip:AddLine(16, "Jewel sockets: "..sockets)
 				end
 				if selIndex ~= self.activeSpec then
 					local calcFunc, calcBase = self.build.calcsTab:GetMiscCalculator()
@@ -85,7 +85,7 @@ local TreeTabClass = newClass("TreeTab", "ControlHost", function(self, build)
 						end
 					end
 				end
-				tooltip:AddLine(16, T("Game Version: ")..treeVersions[spec.treeVersion].display)
+				tooltip:AddLine(16, "Game Version: "..treeVersions[spec.treeVersion].display)
 			end
 		end
 	end
@@ -114,11 +114,11 @@ local TreeTabClass = newClass("TreeTab", "ControlHost", function(self, build)
 	self.controls.compareSelect.maxDroppedWidth = 1000
 	self.controls.compareSelect.enableDroppedWidth = true
 	self.controls.compareSelect.enableChangeBoxWidth = true
-	self.controls.reset = new("ButtonControl", { "LEFT", self.controls.compareCheck, "RIGHT" }, { 8, 0, 100, 20 }, T("Reset Tree"), function()
+	self.controls.reset = new("ButtonControl", { "LEFT", self.controls.compareCheck, "RIGHT" }, { 8, 0, 100, 20 }, "Reset Tree", function()
 		local controls = { }
 		local buttonY = 65
 		controls.warningLabel = new("LabelControl", nil, { 0, 30, 0, 16 }, "^7Warning: resetting your passive tree cannot be undone.\n")
-		controls.reset = new("ButtonControl", nil, { -65, buttonY, 100, 20 }, T("Reset"), function()
+		controls.reset = new("ButtonControl", nil, { -65, buttonY, 100, 20 }, "Reset", function()
 			wipeTable(self.build.spec.hashOverrides) -- reset attribute nodes to "Attribute"
 			self.build.spec:ResetNodes()
 			self.build.spec:BuildAllDependsAndPaths()
@@ -126,10 +126,10 @@ local TreeTabClass = newClass("TreeTab", "ControlHost", function(self, build)
 			self.build.buildFlag = true
 			main:ClosePopup()
 		end)
-		controls.cancel = new("ButtonControl", nil, { 65, buttonY, 100, 20 }, T("Cancel"), function()
+		controls.cancel = new("ButtonControl", nil, { 65, buttonY, 100, 20 }, "Cancel", function()
 			main:ClosePopup()
 		end)
-		main:OpenPopup(470, 100, T("Reset Tree"), controls, nil, "edit", "cancel")
+		main:OpenPopup(470, 100, "Reset Tree", controls, nil, "edit", "cancel")
 	end)
 
 	-- Tree Version Dropdown
@@ -141,7 +141,7 @@ local TreeTabClass = newClass("TreeTab", "ControlHost", function(self, build)
 		}
 		t_insert(self.treeVersions, value)
 	end
-	self.controls.versionText = new("LabelControl", { "LEFT", self.controls.reset, "RIGHT" }, { 8, 0, 0, 16 }, T("Version:"))
+	self.controls.versionText = new("LabelControl", { "LEFT", self.controls.reset, "RIGHT" }, { 8, 0, 0, 16 }, "Version:")
 	self.controls.versionSelect = new("DropDownControl", { "LEFT", self.controls.versionText, "RIGHT" }, { 8, 0, 60, 20 }, self.treeVersions, function(index, selected)
 		if selected.value ~= self.build.spec.treeVersion then
 			self:OpenVersionConvertPopup(selected.value, true)
@@ -162,7 +162,7 @@ local TreeTabClass = newClass("TreeTab", "ControlHost", function(self, build)
 	self.tradeLeaguesList = { }
 	-- Find Timeless Jewel Button
 	-- Add button back if/when we figure out how to search for them again
-	--self.controls.findTimelessJewel = new("ButtonControl", { "LEFT", self.controls.treeSearch, "RIGHT" }, { 8, 0, 150, 20 }, T("Find Timeless Jewel"), function()
+	--self.controls.findTimelessJewel = new("ButtonControl", { "LEFT", self.controls.treeSearch, "RIGHT" }, { 8, 0, 150, 20 }, "Find Timeless Jewel", function()
 		--self:FindTimelessJewel()
 	--end)
 
@@ -440,7 +440,7 @@ function TreeTabClass:Load(xml, dbFileName)
 		if type(node) == "table" then
 			if node.elem == "Spec" then
 				if node.attrib.treeVersion and not treeVersions[node.attrib.treeVersion] then
-					main:OpenMessagePopup(T("Unknown Passive Tree Version"), "The build you are trying to load uses an unrecognised version of the passive skill tree.\nYou may need to update the program before loading this build.")
+					main:OpenMessagePopup("Unknown Passive Tree Version", "The build you are trying to load uses an unrecognised version of the passive skill tree.\nYou may need to update the program before loading this build.")
 					return true
 				end
 				local newSpec = new("PassiveSpec", self.build, node.attrib.treeVersion or defaultTreeVersion)
@@ -540,7 +540,7 @@ function TreeTabClass:ConvertToVersion(version, remove, success, ignoreRuthlessC
 	end
 	self.modFlag = true
 	if success then
-		main:OpenMessagePopup(T("Tree Converted"), "The tree has been converted to "..treeVersions[version].display..".\nNote that some or all of the passives may have been de-allocated due to changes in the tree.\n\nYou can switch back to the old tree using the tree selector at the bottom left.")
+		main:OpenMessagePopup("Tree Converted", "The tree has been converted to "..treeVersions[version].display..".\nNote that some or all of the passives may have been de-allocated due to changes in the tree.\n\nYou can switch back to the old tree using the tree selector at the bottom left.")
 	end
 end
 
@@ -561,21 +561,21 @@ end
 
 function TreeTabClass:OpenSpecManagePopup()
 	local importTree =
-		new("ButtonControl", nil, {-99, 259, 90, 20}, T("Import Tree"), function()
+		new("ButtonControl", nil, {-99, 259, 90, 20}, "Import Tree", function()
 			self:OpenImportPopup()
 		end)
 	local exportTree =
-		new("ButtonControl", {"LEFT", importTree, "RIGHT"}, {8, 0, 90, 20}, T("Export Tree"), function()
+		new("ButtonControl", {"LEFT", importTree, "RIGHT"}, {8, 0, 90, 20}, "Export Tree", function()
 			self:OpenExportPopup()
 		end)
 	importTree.enabled = false
 	exportTree.enabled = false
 
-	main:OpenPopup(370, 290, T("Manage Passive Trees"), {
+	main:OpenPopup(370, 290, "Manage Passive Trees", {
 		new("PassiveSpecListControl", nil, {0, 50, 350, 200}, self),
 		importTree,
 		exportTree,
-		new("ButtonControl", {"LEFT", exportTree, "RIGHT"}, {8, 0, 90, 20}, T("Done"), function()
+		new("ButtonControl", {"LEFT", exportTree, "RIGHT"}, {8, 0, 90, 20}, "Done", function()
 			main:ClosePopup()
 		end),
 	})
@@ -585,33 +585,33 @@ function TreeTabClass:OpenVersionConvertPopup(version, ignoreRuthlessCheck)
 	local controls = { }
 	controls.warningLabel = new("LabelControl", nil, {0, 20, 0, 16}, "^7Warning: some or all of the passives may be de-allocated due to changes in the tree.\n\n" ..
 		"Convert will replace your current tree.\nCopy + Convert will backup your current tree.\n")
-	controls.convert = new("ButtonControl", nil, {-125, 105, 100, 20}, T("Convert"), function()
+	controls.convert = new("ButtonControl", nil, {-125, 105, 100, 20}, "Convert", function()
 		self:ConvertToVersion(version, true, false, ignoreRuthlessCheck)
 		main:ClosePopup()
 	end)
-	controls.convertCopy = new("ButtonControl", nil, {0, 105, 125, 20}, T("Copy + Convert"), function()
+	controls.convertCopy = new("ButtonControl", nil, {0, 105, 125, 20}, "Copy + Convert", function()
 		self:ConvertToVersion(version, false, false, ignoreRuthlessCheck)
 		main:ClosePopup()
 	end)
-	controls.cancel = new("ButtonControl", nil, {125, 105, 100, 20}, T("Cancel"), function()
+	controls.cancel = new("ButtonControl", nil, {125, 105, 100, 20}, "Cancel", function()
 		self.controls.versionSelect:SelByValue(self.build.spec.treeVersion, 'value')
 		main:ClosePopup()
 	end)
-	main:OpenPopup(570, 140, T("Convert to Version ")..treeVersions[version].display, controls, "convert", "edit")
+	main:OpenPopup(570, 140, "Convert to Version "..treeVersions[version].display, controls, "convert", "edit")
 end
 
 function TreeTabClass:OpenVersionConvertAllPopup(version)
 	local controls = { }
 	controls.warningLabel = new("LabelControl", nil, {0, 20, 0, 16}, "^7Warning: some or all of the passives may be de-allocated due to changes in the tree.\n\n" ..
 		"Convert will replace all trees that are not Version "..treeVersions[version].display..".\nThis action cannot be undone.\n")
-	controls.convert = new("ButtonControl", nil, {-58, 105, 100, 20}, T("Convert"), function()
+	controls.convert = new("ButtonControl", nil, {-58, 105, 100, 20}, "Convert", function()
 		self:ConvertAllToVersion(version)
 		main:ClosePopup()
 	end)
-	controls.cancel = new("ButtonControl", nil, {58, 105, 100, 20}, T("Cancel"), function()
+	controls.cancel = new("ButtonControl", nil, {58, 105, 100, 20}, "Cancel", function()
 		main:ClosePopup()
 	end)
-	main:OpenPopup(570, 140, T("Convert all to Version ")..treeVersions[version].display, controls, "convert", "edit")
+	main:OpenPopup(570, 140, "Convert all to Version "..treeVersions[version].display, controls, "convert", "edit")
 end
 
 function TreeTabClass:OpenImportPopup()
@@ -674,18 +674,18 @@ function TreeTabClass:OpenImportPopup()
 		return latestTreeVersion .. (isRuthless and "_ruthless" or "")
 	end
 
-	controls.nameLabel = new("LabelControl", nil, {-180, 20, 0, 16}, T("Enter name for this passive tree:"))
+	controls.nameLabel = new("LabelControl", nil, {-180, 20, 0, 16}, "Enter name for this passive tree:")
 	controls.name = new("EditControl", nil, {100, 20, 350, 18}, "", nil, nil, nil, function(buf)
 		controls.msg.label = ""
 		controls.import.enabled = buf:match("%S") and controls.edit.buf:match("%S")
 	end)
-	controls.editLabel = new("LabelControl", nil, {-150, 45, 0, 16}, T("Enter passive tree link:"))
+	controls.editLabel = new("LabelControl", nil, {-150, 45, 0, 16}, "Enter passive tree link:")
 	controls.edit = new("EditControl", nil, {100, 45, 350, 18}, "", nil, nil, nil, function(buf)
 		controls.msg.label = ""
 		controls.import.enabled = buf:match("%S") and controls.name.buf:match("%S")
 	end)
 	controls.msg = new("LabelControl", nil, {0, 65, 0, 16}, "")
-	controls.import = new("ButtonControl", nil, {-45, 85, 80, 20}, T("Import"), function()
+	controls.import = new("ButtonControl", nil, {-45, 85, 80, 20}, "Import", function()
 		local treeLink = controls.edit.buf
 		if #treeLink == 0 then
 			return
@@ -735,25 +735,25 @@ function TreeTabClass:OpenImportPopup()
 		end
 	end)
 	controls.import.enabled = false
-	controls.cancel = new("ButtonControl", nil, {45, 85, 80, 20}, T("Cancel"), function()
+	controls.cancel = new("ButtonControl", nil, {45, 85, 80, 20}, "Cancel", function()
 		main:ClosePopup()
 	end)
-	main:OpenPopup(580, 115, T("Import Tree"), controls, "import", "name")
+	main:OpenPopup(580, 115, "Import Tree", controls, "import", "name")
 end
 
 function TreeTabClass:OpenExportPopup()
 	local treeLink = self.build.spec:EncodeURL(treeVersions[self.build.spec.treeVersion].url)
 	local popup
 	local controls = { }
-	controls.label = new("LabelControl", nil, {0, 20, 0, 16}, T("Passive tree link:"))
+	controls.label = new("LabelControl", nil, {0, 20, 0, 16}, "Passive tree link:")
 	controls.edit = new("EditControl", nil, {0, 40, 350, 18}, treeLink, nil, "%Z")
-	controls.shrink = new("ButtonControl", nil, {-90, 70, 140, 20}, T("Shrink with PoEURL"), function()
+	controls.shrink = new("ButtonControl", nil, {-90, 70, 140, 20}, "Shrink with PoEURL", function()
 		controls.shrink.enabled = false
 		controls.shrink.label = "Shrinking..."
 		launch:DownloadPage("http://poeurl.com/shrink.php?url="..treeLink, function(response, errMsg)
 			controls.shrink.label = "Done"
 			if errMsg or not response.body:match("%S") then
-				main:OpenMessagePopup(T("PoEURL Shortener"), "Failed to get PoEURL link. Try again later.")
+				main:OpenMessagePopup("PoEURL Shortener", "Failed to get PoEURL link. Try again later.")
 			else
 				treeLink = "http://poeurl.com/"..response.body
 				controls.edit:SetText(treeLink)
@@ -761,13 +761,13 @@ function TreeTabClass:OpenExportPopup()
 			end
 		end)
 	end)
-	controls.copy = new("ButtonControl", nil, {30, 70, 80, 20}, T("Copy"), function()
+	controls.copy = new("ButtonControl", nil, {30, 70, 80, 20}, "Copy", function()
 		Copy(treeLink)
 	end)
-	controls.done = new("ButtonControl", nil, {120, 70, 80, 20}, T("Done"), function()
+	controls.done = new("ButtonControl", nil, {120, 70, 80, 20}, "Done", function()
 		main:ClosePopup()
 	end)
-	popup = main:OpenPopup(380, 100, T("Export Tree"), controls, "done", "edit")
+	popup = main:OpenPopup(380, 100, "Export Tree", controls, "done", "edit")
 end
 
 function TreeTabClass:ModifyAttributePopup(hoverNode)
@@ -776,7 +776,7 @@ function TreeTabClass:ModifyAttributePopup(hoverNode)
 	local attributes = { "Strength", "Dexterity", "Intelligence" }
 	
 	controls.attrSelect = new("DropDownControl", {"TOPLEFT",nil,"TOPLEFT"}, {225, 30, 100, 18}, attributes, nil)
-	controls.save = new("ButtonControl", nil, {-50, 65, 80, 20}, T("Allocate"), function()
+	controls.save = new("ButtonControl", nil, {-50, 65, 80, 20}, "Allocate", function()
 		spec:SwitchAttributeNode(hoverNode.id, controls.attrSelect.selIndex)
 		spec.attributeIndex = controls.attrSelect.selIndex
 		spec:AllocNode(hoverNode, spec.tracePath and hoverNode == spec.tracePath[#spec.tracePath] and spec.tracePath)
@@ -784,7 +784,7 @@ function TreeTabClass:ModifyAttributePopup(hoverNode)
 		self.build.buildFlag = true
 		main:ClosePopup()
 	end)
-	controls.close = new("ButtonControl", nil, {50, 65, 80, 20}, T("Cancel"), function()
+	controls.close = new("ButtonControl", nil, {50, 65, 80, 20}, "Cancel", function()
 		spec:DeallocNode(hoverNode)
 		main:ClosePopup()
 	end)
@@ -794,7 +794,7 @@ function TreeTabClass:ModifyAttributePopup(hoverNode)
 		..colorCodes.RARE.."Right-click ^8an allocated node to toggle attribute types or to set an\n" .. 
 		"unallocated node to your last used attribute\n\n"
 	)
-	main:OpenPopup(550, 185, T("Choose Attribute"), controls, "save")
+	main:OpenPopup(550, 185, "Choose Attribute", controls, "save")
 end
 
 function TreeTabClass:SaveMasteryPopup(node, listControl)
@@ -832,7 +832,7 @@ function TreeTabClass:OpenMasteryPopup(node, viewPort)
 	--Check to make sure that the effects list has a potential mod to apply to a mastery
 	if not (next(effects) == nil) then
 		local passiveMasteryControlHeight = (#effects + 1) * 14 + 2
-		controls.close =  new("ButtonControl", nil, {0, 30 + passiveMasteryControlHeight, 90, 20}, T("Cancel"), function()
+		controls.close =  new("ButtonControl", nil, {0, 30 + passiveMasteryControlHeight, 90, 20}, "Cancel", function()
 			node.sd = cachedSd
 			node.allMasteryOptions = cachedAllMasteryOption
 			self.build.spec.tree:ProcessStats(node)
@@ -1374,7 +1374,7 @@ function TreeTabClass:FindTimelessJewel()
 	-- Militant Faith protect notables controls
 	controls.protectAllocatedLabel = new("LabelControl", { "TOPLEFT", nil, "TOPLEFT" }, { 15, 25, 0, 16 }, "^7Protect allocated nodes from changing:")
 	controls.protectAllocatedSelect = new("DropDownControl", { "TOPLEFT", controls.protectAllocatedLabel, "BOTTOMLEFT" }, { 0, 8, 200, 18 }, nil, nil)
-	controls.protectAllocatedButtonAdd = new("ButtonControl", { "LEFT", controls.protectAllocatedSelect, "RIGHT" }, { 5, 0, 44, 18 }, T("Add"), function()
+	controls.protectAllocatedButtonAdd = new("ButtonControl", { "LEFT", controls.protectAllocatedSelect, "RIGHT" }, { 5, 0, 44, 18 }, "Add", function()
 		local selValue = controls.protectAllocatedSelect:GetSelValue()
 		if selValue and not controls["protected:"..selValue] then
 			protectedNodesCount = protectedNodesCount + 1
@@ -1382,7 +1382,7 @@ function TreeTabClass:FindTimelessJewel()
 			controls["protected:"..selValue] = new("LabelControl", { "TOPLEFT", controls.protectAllocatedSelect, "BOTTOMLEFT" }, { 0, 16 * protectedNodesCount - 10, 0, 16 }, "^7"..selValue)
 		end
 	end)
-	controls.protectAllocatedButtonClear = new("ButtonControl", { "LEFT", controls.protectAllocatedButtonAdd, "RIGHT" }, { 5, 0, 44, 18 }, T("Clear"), function()
+	controls.protectAllocatedButtonClear = new("ButtonControl", { "LEFT", controls.protectAllocatedButtonAdd, "RIGHT" }, { 5, 0, 44, 18 }, "Clear", function()
 		clearProtected()
 	end)
 	-- set shown and list on load
@@ -1788,7 +1788,7 @@ function TreeTabClass:FindTimelessJewel()
 		timelessData.fallbackWeightMode.idx = index
 	end)
 	controls.fallbackWeightsList.selIndex = timelessData.fallbackWeightMode.idx or 1
-	controls.fallbackWeightsButton = new("ButtonControl", {"LEFT", controls.fallbackWeightsList, "RIGHT"}, {5, 0, 66, 18}, T("Generate"), function()
+	controls.fallbackWeightsButton = new("ButtonControl", {"LEFT", controls.fallbackWeightsList, "RIGHT"}, {5, 0, 66, 18}, "Generate", function()
 		setupFallbackWeights()
 		controls.searchListFallbackButton.label = "^4Fallback Nodes"
 	end)
@@ -1886,7 +1886,7 @@ function TreeTabClass:FindTimelessJewel()
 			controls.searchTradeLeagueSelect:SetList(self.tradeLeaguesList)
 		end)
 	end
-	controls.searchTradeButton = new("ButtonControl", { "BOTTOMRIGHT", controls.searchResults, "TOPRIGHT" }, { 0, -5, 170, 20 }, T("Copy Trade URL"), function()
+	controls.searchTradeButton = new("ButtonControl", { "BOTTOMRIGHT", controls.searchResults, "TOPRIGHT" }, { 0, -5, 170, 20 }, "Copy Trade URL", function()
 		local seedTrades = {}
 		local startRow = controls.searchResults.selIndex or 1
 		local endRow = startRow + m_floor(10 / ((timelessData.sharedResults.conqueror.id == 1) and 3 or 1))
@@ -1993,7 +1993,7 @@ function TreeTabClass:FindTimelessJewel()
 	local totalWidth = m_floor(width * buttons + divider * (buttons - 1))
 	local buttonX = -totalWidth / 2 + width / 2
 
-	controls.searchButton = new("ButtonControl", nil, {buttonX, 485, width, 20}, T("Search"), function()
+	controls.searchButton = new("ButtonControl", nil, {buttonX, 485, width, 20}, "Search", function()
 		if treeData.nodes[timelessData.jewelSocket.id] and treeData.nodes[timelessData.jewelSocket.id].isJewelSocket then
 			local radiusNodes = treeData.nodes[timelessData.jewelSocket.id].nodesInRadius[3] -- large radius around timelessData.jewelSocket.id
 			local allocatedNodes = { }
@@ -2285,16 +2285,16 @@ function TreeTabClass:FindTimelessJewel()
 			controls.searchResults.selIndex = 1
 		end
 	end)
-	controls.resetButton = new("ButtonControl", nil, {buttonX + (width + divider), 485, width, 20}, T("Reset"), function()
+	controls.resetButton = new("ButtonControl", nil, {buttonX + (width + divider), 485, width, 20}, "Reset", function()
 		updateSearchList("", true)
 		updateSearchList("", false)
 		wipeTable(timelessData.searchResults)
 		controls.searchTradeButton.enabled = false
 		clearProtected()
 	end)
-	controls.closeButton = new("ButtonControl", nil, {buttonX + (width + divider) * 2, 485, width, 20}, T("Cancel"), function()
+	controls.closeButton = new("ButtonControl", nil, {buttonX + (width + divider) * 2, 485, width, 20}, "Cancel", function()
 		main:ClosePopup()
 	end)
 
-	main:OpenPopup(910, 517, T("Find a Timeless Jewel"), controls)
+	main:OpenPopup(910, 517, "Find a Timeless Jewel", controls)
 end

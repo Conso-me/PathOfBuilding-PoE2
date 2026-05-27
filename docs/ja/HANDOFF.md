@@ -1,6 +1,6 @@
 # HANDOFF: PoB-PoE2 JP 日本語化プロジェクト
 
-最終更新: 2026-05-26 / 引き継ぎ用ドキュメント
+最終更新: 2026-05-27 / 引き継ぎ用ドキュメント
 
 このファイルは「**次のセッションが時間を無駄にしないため**」のもの。
 README-ja.md が "what" なら、これは "why" と "次にどう動くか" 。
@@ -19,15 +19,25 @@ ls src/Locale/ja_JP/                  # 8 辞書ファイル + _overrides/
 - ブランチ: `ja`（origin/ja に push 済）
 - upstream fork-point: `9b201c201` (Add Search and sort to exporter #1147)
 - 翻訳ペア合計: **4,790件**
-- UI ラップカバレッジ: **99%** (297 中 294 call sites)
-- Stats ラップカバレッジ: **100%** (205/205)
+- **翻訳方式（2026-05-27 変更）**: T() ラッパー方式 → **DrawString フック方式** へ移行。`src/JaText.lua` の `translate()` が描画直前に T_MAP ルックアップ。upstream の素のコードが ~99% 維持される。
+- 旧 T()/SkillT/etc ラップカバレッジ指標は obsolete（DrawString フックが call-site 通過後の文字列を翻訳するため、call-site ラップ率は意味を持たない）
 
 ---
 
 ## 設計判断のサマリ（後で蒸し返さないため）
 
 ### なぜオーバーレイ方式か（直接編集ではなく）
-upstream は月次リリース、`dev` ブランチで活発に開発中（9,786 commits）。直接編集だと毎週マージ衝突地獄。`T()` 等の関数経由なら upstream ファイルへの変更が極小化される。実測: 27 ファイル × 平均 8 行 = 216 行の変更のみ。
+upstream は月次リリース、`dev` ブランチで活発に開発中（9,786 commits）。直接編集だと毎週マージ衝突地獄。
+
+### なぜ T() ラッパー方式を捨てて DrawString フック方式に移行したか（2026-05-27）
+旧設計は各 call-site で `T("Save")` のようにラップしていたが、これでも upstream の 30+ ファイル / 505 行が変更状態 → rebase で広範囲コンフリクトが続いた。
+
+新設計は `src/JaText.lua` の DrawString/DrawStringWidth フックで描画直前に T_MAP ルックアップ。先頭の色コード（`^N` / `^xRRGGBB`）を剝がしてから body を引くので `"^7" .. "Save"` のような連結も対応。**call-site が upstream とバイト同一** に近づき、rebase コンフリクトが現実的なレベルに減った（残差分 11 ファイル / 50+24- 行）。
+
+トレードオフ:
+- 利点: rebase 摩擦激減、JaText の glyph 描画と翻訳ロジックが同じレイヤに集約
+- 欠点: 連結中位部品（`"Skill" .. ": " .. skill_name`）は composite で T_MAP に当たらず英語残り。`s_format("^7%s: %s%s", ...)` も同様
+- 互換シム: `Locale.T/SkillT/ItemT/StatT/KeywordT` は残置（変数引数版 19 件と Options ロケール切替が globals 経由で呼ぶため）
 
 ### なぜ「内部は英語、表示時のみ日本語」か
 ビルド XML (`Builds/*.xml`) はスキル名・mod・アイテム名を**英語のまま**保存している。内部状態を日本語化すると upstream PoB ユーザーとビルド共有不可能になる。`ModParser` も英語パターンで内部マッチする。だから表示の最後の段階だけ `T()`/`SkillT()`/`ModFormat()` を挟む。
@@ -101,9 +111,17 @@ bs4 は不要（regex で済ませた）。
 
 ```
 src/
-├── Launch.lua                ── Locale ロード＋グローバル T/SkillT/... 登録 (line 67-83)
-├── Locale.lua                ── ★ T(), SkillT(), ItemT(), StatT(), KeywordT(),
-│                                ModFormat() を提供。base + _overrides の merge ロジック
+├── Launch.lua                ── Locale ロード＋グローバル T/SkillT/... 登録、
+│                                ★ self.jaText.localeGetMap = Locale.GetTMap で
+│                                  T_MAP を JaText に注入 (line 100-104)
+├── JaText.lua                ── ★ DrawString/DrawStringWidth フック。
+│                                CJK glyph atlas 描画 + translate() による
+│                                T_MAP ルックアップ + 色コード剝奪
+├── FontDiag.lua              ── CJK 文字到達ログ（デバッグ用）
+├── Locale.lua                ── ★ T(), SkillT(), ItemT(), StatT(), KeywordT() の
+│                                互換シム（変数引数の残置呼び出し用）+
+│                                GetTMap() による全カテゴリ統合フラット map +
+│                                ModFormat() (mod pattern 翻訳、別 API)
 ├── Locale/ja_JP/
 │   ├── UI.lua                ── 168 件 (手動翻訳)
 │   ├── Skills.lua            ── 917 件 (auto scrape)
@@ -113,6 +131,8 @@ src/
 │   ├── Keywords.lua          ── 224 件 (auto scrape)
 │   ├── Tree.lua              ── 73 件 (auto scrape、上位職のみ)
 │   ├── Mods.lua              ── 2053 patterns (auto scrape)
+│   ├── GlyphMap.lua          ── ★ JA atlas のグリフ座標マップ
+│   │                            （tools/extend_font.py で生成、1560 glyphs）
 │   └── _overrides/           ── 翻訳上書き
 │       ├── README.md         ── 仕組みの説明 ★必読
 │       ├── Skills.lua        ── 例: "Cast on Shock" 上書き
@@ -151,21 +171,27 @@ docs/ja/
 
 ## 次の作業 — 優先度別
 
-### A. 実機検証（最優先 — まだ未実行）
-PoB-PoE2 を Windows で実際に起動して JP 表示を目視確認。
-- `runtime-win32.zip` を C:\PoB あたりに展開
-- `src/` フォルダを fork クローンで上書き
-- `Path of Building.exe` 起動
-- 各タブ巡回（Tree/Skills/Items/Calcs/Notes/Configuration/Party/Trade）
-- popup（Options/About/build save/delete confirmation）も確認
-- **観測**: 翻訳されている / 未翻訳箇所がある / クラッシュする / 文字化け
-- **期待**: 翻訳済は日本語、未翻訳は英語にフォールバック、計算結果は upstream と完全一致
+### A. 実機検証（DrawString フック方式の目視確認 — 最優先）
+WSL+DISPLAY=:0 で起動確認は通過済（`Engine shutdown complete` 正常終了 / Lua エラーゼロ / atlas 4 枚プリロード OK）。残りは画面巡回チェック:
+```bash
+cd ~/projects/pob-poe2-jp/runtime && DISPLAY=:0 ./Path\{space\}of\{space\}Building-PoE2.exe
+```
+チェックリスト:
+- メイン Build List → "新規"/"開く"/"コピー"/"名称変更"/"削除"
+- Options ポップアップ → "Language:" ラベル翻訳（色コード剝奪パス）
+- Skills タブ・ジェム選択 → ジェム名翻訳（SkillT シム + colorCodes.GEM プリフィックス）
+- Items タブ・ユニーク tooltip → ユニーク名（Items→Uniques フォールバック）
+- Calcs Breakdown → ソースアイテム行
+- アイテム mod 行 → ModFormat 経由で従来通り翻訳
 
-### B. ロケール切替 UI（中、ユーザビリティ向上）
-現在 `Locale.lua:24` に `current = "ja_JP"` ハードコード。Options popup に dropdown を追加して `en_US` / `ja_JP` 選択可能に。
-- 設定の永続化: `main:SaveSettings()` で Settings.xml に保存
-- 切替時の挙動: Locale.SetLocale() でキャッシュ無効化＋ UI 再描画
-- en_US "辞書" は不要（全 dict が miss → 英語フォールバックで足りる）
+### B. ロケール切替 UI ✅ 完了（commit `e0f51ef98`）
+Options popup に dropdown 実装済。`main.locale` で永続化、`launch.locale.SetLocale()` で T_MAP もリセット。
+
+### B-2. 変数引数 T() の最終撤廃（小、rebase 摩擦をゼロに）
+残った 19 件の `SkillT(self.gemName)` / `ItemT(item.name)` 等を除去すれば src/Classes と src/Modules が upstream とほぼバイト同一になる。
+- 検証: `grep -rEn '\b(T|SkillT|ItemT|StatT|KeywordT)\(' src/Classes src/Modules`
+- 機能影響: なし（DrawString フックが最終文字列を翻訳）
+- 例外: `MinionListControl.lua:73` のような `"^7".."Skill"..": "..SkillT(name)` は連結を `"^7Skill: " .. name` に手動畳み込み必要
 
 ### C. Mods generalization（中、品質向上）
 `Mods.lua` の 2,053 patterns には "Monster Level: 83" 等の具体値混じりが多数。

@@ -120,7 +120,7 @@ function ExtBuildListControlClass:Init(providerName)
 	end
 
 	if self.activeListProvider:GetPageUrl() then
-		self.controls.all = new("ButtonControl", { "BOTTOM", self, "BOTTOM" }, { 0, 1, self.width, 20 }, T("See All"),
+		self.controls.all = new("ButtonControl", { "BOTTOM", self, "BOTTOM" }, { 0, 1, self.width, 20 }, "See All",
 			function()
 				local url = self.activeListProvider:GetPageUrl()
 				if url then
@@ -407,14 +407,14 @@ function ExtBuildListControlClass:Draw(viewPort, noTooltip)
 			local relativeHeight = currentHeight + 10 - self.controls.scrollBarV.offset
 			if relativeHeight > y and relativeHeight < self.height() + y - 10 then
 				if build.buildLink then
-					local importButton = new("ButtonControl", nil, { x, currentHeight - self.controls.scrollBarV.offset, 45, 20 }, T("Import"), function()
+					local importButton = new("ButtonControl", nil, { x, currentHeight - self.controls.scrollBarV.offset, 45, 20 }, "Import", function()
 						self:importBuild(build)
 					end)
 					t_insert(self.controls, importButton)
 				end
 
 				if build.previewLink then
-					local previewButton = new("ButtonControl", nil, { x + 50, currentHeight - self.controls.scrollBarV.offset, 60, 20 }, T("Preview"), function()
+					local previewButton = new("ButtonControl", nil, { x + 50, currentHeight - self.controls.scrollBarV.offset, 60, 20 }, "Preview", function()
 							OpenURL(build.previewLink)
 					end)
 					t_insert(self.controls, previewButton)

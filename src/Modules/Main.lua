@@ -183,10 +183,10 @@ function main:Init()
 	self.anchorMain.y = function()
 		return self.screenH - 4
 	end
-	self.controls.options = new("ButtonControl", {"BOTTOMLEFT",self.anchorMain,"BOTTOMLEFT"}, {0, 0, 68, 20}, T("Options"), function()
+	self.controls.options = new("ButtonControl", {"BOTTOMLEFT",self.anchorMain,"BOTTOMLEFT"}, {0, 0, 68, 20}, "Options", function()
 		self:OpenOptionsPopup()
 	end)
-	self.controls.about = new("ButtonControl", {"BOTTOMLEFT",self.anchorMain,"BOTTOMLEFT"}, {72, 0, 68, 20}, T("About"), function()
+	self.controls.about = new("ButtonControl", {"BOTTOMLEFT",self.anchorMain,"BOTTOMLEFT"}, {72, 0, 68, 20}, "About", function()
 		self:OpenAboutPopup()
 	end)
 	self.controls.applyUpdate = new("ButtonControl", {"BOTTOMLEFT",self.anchorMain,"BOTTOMLEFT"}, {0, -24, 140, 20}, "^x50E050Update Ready", function()
@@ -219,7 +219,7 @@ function main:Init()
 	self.controls.devMode.shown = function()
 		return launch.devMode
 	end
-	self.controls.dismissToast = new("ButtonControl", {"BOTTOMLEFT",self.anchorMain,"BOTTOMLEFT"}, {0, function() return -self.mainBarHeight + self.toastHeight end, 80, 20}, T("Dismiss"), function()
+	self.controls.dismissToast = new("ButtonControl", {"BOTTOMLEFT",self.anchorMain,"BOTTOMLEFT"}, {0, function() return -self.mainBarHeight + self.toastHeight end, 80, 20}, "Dismiss", function()
 		self.toastMode = "HIDING"
 		self.toastStart = GetTime()
 	end)
@@ -764,20 +764,20 @@ function main:OpenPathPopup(invalidPath, ignoreBuild)
 			controls.save.enabled = false
 		end
 	end)
-	controls.save = new("ButtonControl", { "TOPLEFT", controls.userPath, "TOPLEFT" }, { 0, 26, 206, 20 }, T("Save"), function()
+	controls.save = new("ButtonControl", { "TOPLEFT", controls.userPath, "TOPLEFT" }, { 0, 26, 206, 20 }, "Save", function()
 		local res, msg = MakeDir(controls.userPath.buf)
 		if not res and msg ~= "No error" then
-			self:OpenMessagePopup(T("Error"), "Couldn't create '"..controls.userPath.buf.."' : "..msg)
+			self:OpenMessagePopup("Error", "Couldn't create '"..controls.userPath.buf.."' : "..msg)
 		else
 			self:ChangeUserPath(controls.userPath.buf, ignoreBuild)
 			self:ClosePopup()
 		end
 	end)
 	controls.save.enabled = false
-	controls.cancel = new("ButtonControl", nil, { 0, 0, 0, 0 }, T("Cancel"), function()
+	controls.cancel = new("ButtonControl", nil, { 0, 0, 0, 0 }, "Cancel", function()
 		-- Do nothing, require user to enter a location
 	end)
-	self:OpenPopup(600, 150, T("Change Settings Path"), controls, "save", nil, "cancel")
+	self:OpenPopup(600, 150, "Change Settings Path", controls, "save", nil, "cancel")
 end
 
 function main:ChangeUserPath(newUserPath, ignoreBuild)
@@ -818,15 +818,15 @@ function main:OpenOptionsPopup()
 	drawSectionHeader("app", "Application options")
 
 	controls.language = new("DropDownControl", { "TOPLEFT", nil, "TOPLEFT" }, { defaultLabelPlacementX, currentY, 120, 18 }, {
-		{ label = T("English"), locale = "en_US" },
-		{ label = T("Japanese"), locale = "ja_JP" },
+		{ label = "English", locale = "en_US" },
+		{ label = "Japanese", locale = "ja_JP" },
 	}, function(index, value)
 		self.locale = value.locale
 		if launch.locale then
 			launch.locale.SetLocale(self.locale)
 		end
 	end)
-	controls.languageLabel = new("LabelControl", { "RIGHT", controls.language, "LEFT" }, { defaultLabelSpacingPx, 0, 0, 16 }, "^7" .. T("Language:"))
+	controls.languageLabel = new("LabelControl", { "RIGHT", controls.language, "LEFT" }, { defaultLabelSpacingPx, 0, 0, 16 }, "^7" .. "Language:")
 	controls.language:SelByValue(self.locale, "locale")
 
 	nextRow()
@@ -1032,7 +1032,7 @@ function main:OpenOptionsPopup()
 	-- last line with buttons has more spacing
 	nextRow(1.5)
 
-	controls.save = new("ButtonControl", nil, {-45, currentY, 80, 20}, T("Save"), function()
+	controls.save = new("ButtonControl", nil, {-45, currentY, 80, 20}, "Save", function()
 		launch.connectionProtocol = tonumber(self.connectionProtocol)
 		if controls.proxyURL.buf:match("%w") then
 			launch.proxyURL = controls.proxyType.list[controls.proxyType.selIndex].scheme .. "://" .. controls.proxyURL.buf
@@ -1056,7 +1056,7 @@ function main:OpenOptionsPopup()
 		main:ClosePopup()
 		main:SaveSettings()
 	end)
-	controls.cancel = new("ButtonControl", nil, {45, currentY, 80, 20}, T("Cancel"), function()
+	controls.cancel = new("ButtonControl", nil, {45, currentY, 80, 20}, "Cancel", function()
 		if self.locale ~= initialLocale then
 			self.locale = initialLocale
 			if launch.locale then
@@ -1087,7 +1087,7 @@ function main:OpenOptionsPopup()
 		main:ClosePopup()
 	end)
 	nextRow(1.5)
-	self:OpenPopup(popupWidth, currentY, T("Options"), controls, "save", nil, "cancel")
+	self:OpenPopup(popupWidth, currentY, "Options", controls, "save", nil, "cancel")
 end
 
 function main:SetManifestBranch(branchName)
@@ -1133,17 +1133,17 @@ function main:OpenUpdatePopup()
 	end
 	local controls = { }
 	controls.changeLog = new("TextListControl", nil, {0, 20, 780, 542}, nil, changeList)
-	controls.update = new("ButtonControl", nil, {-45, 570, 80, 20}, T("Update"), function()
+	controls.update = new("ButtonControl", nil, {-45, 570, 80, 20}, "Update", function()
 		self:ClosePopup()
 		local ret = self:CallMode("CanExit", "UPDATE")
 		if ret == nil or ret == true then
 			launch:ApplyUpdate(launch.updateAvailable)
 		end
 	end)
-	controls.cancel = new("ButtonControl", nil, {45, 570, 80, 20}, T("Cancel"), function()
+	controls.cancel = new("ButtonControl", nil, {45, 570, 80, 20}, "Cancel", function()
 		self:ClosePopup()
 	end)
-	self:OpenPopup(800, 600, T("Update Available"), controls)
+	self:OpenPopup(800, 600, "Update Available", controls)
 end
 
 function main:OpenAboutPopup(helpSectionIndex)
@@ -1236,7 +1236,7 @@ function main:OpenAboutPopup(helpSectionIndex)
 		helpSectionIndex = newIndex
 	end
 	local controls = { }
-	controls.close = new("ButtonControl", {"TOPRIGHT",nil,"TOPRIGHT"}, {-10, 10, 50, 20}, T("Close"), function()
+	controls.close = new("ButtonControl", {"TOPRIGHT",nil,"TOPRIGHT"}, {-10, 10, 50, 20}, "Close", function()
 		self:ClosePopup()
 	end)
 	controls.version = new("LabelControl", nil, {0, 18, 0, 18}, "^7Path of Building Community Fork v"..launch.versionNumber)
@@ -1256,7 +1256,7 @@ function main:OpenAboutPopup(helpSectionIndex)
 	if helpSectionIndex then
 		controls.changelog.controls.scrollBar.offset = helpSections[helpSectionIndex].height * textSize
 	end
-	self:OpenPopup(popupWidth, 628, T("About"), controls)
+	self:OpenPopup(popupWidth, 628, "About", controls)
 end
 
 function main:DrawBackground(viewPort)
@@ -1361,7 +1361,7 @@ function main:MoveFolder(name, srcPath, dstPath)
 	-- Create destination folder
 	local res, msg = MakeDir(dstPath..name)
 	if not res then
-		self:OpenMessagePopup(T("Error"), "Couldn't move '"..name.."' to '"..dstPath.."' : "..msg)
+		self:OpenMessagePopup("Error", "Couldn't move '"..name.."' to '"..dstPath.."' : "..msg)
 		return
 	end
 
@@ -1382,7 +1382,7 @@ function main:MoveFolder(name, srcPath, dstPath)
 		local dstName = dstPath..name.."/"..fileName
 		local res, msg = os.rename(srcName, dstName)
 		if not res then
-			self:OpenMessagePopup(T("Error"), "Couldn't move '"..srcName.."' to '"..dstName.."': "..msg)
+			self:OpenMessagePopup("Error", "Couldn't move '"..srcName.."' to '"..dstName.."': "..msg)
 			return
 		end
 		if not handle:NextFile() then
@@ -1393,7 +1393,7 @@ function main:MoveFolder(name, srcPath, dstPath)
 	-- Remove source folder
 	local res, msg = RemoveDir(srcPath..name)
 	if not res then
-		self:OpenMessagePopup(T("Error"), "Couldn't delete '"..dstPath..name.."' : "..msg)
+		self:OpenMessagePopup("Error", "Couldn't delete '"..dstPath..name.."' : "..msg)
 		return
 	end
 end
@@ -1402,7 +1402,7 @@ function main:CopyFolder(srcName, dstName)
 	-- Create destination folder
 	local res, msg = MakeDir(dstName)
 	if not res then
-		self:OpenMessagePopup(T("Error"), "Couldn't copy '"..srcName.."' to '"..dstName.."' : "..msg)
+		self:OpenMessagePopup("Error", "Couldn't copy '"..srcName.."' to '"..dstName.."' : "..msg)
 		return
 	end
 
@@ -1424,7 +1424,7 @@ function main:CopyFolder(srcName, dstName)
 		local dstName = dstName.."/"..fileName
 		local res, msg = copyFile(srcName, dstName)
 		if not res then
-			self:OpenMessagePopup(T("Error"), "Couldn't copy '"..srcName.."' to '"..dstName.."': "..msg)
+			self:OpenMessagePopup("Error", "Couldn't copy '"..srcName.."' to '"..dstName.."': "..msg)
 			return
 		end
 		if not handle:NextFile() then
@@ -1450,7 +1450,7 @@ function main:OpenMessagePopup(title, msg)
 		t_insert(controls, new("LabelControl", nil, {0, 20 + numMsgLines * 16, 0, 16}, line))
 		numMsgLines = numMsgLines + 1
 	end
-	controls.close = new("ButtonControl", nil, {0, 40 + numMsgLines * 16, 80, 20}, T("Ok"), function()
+	controls.close = new("ButtonControl", nil, {0, 40 + numMsgLines * 16, 80, 20}, "Ok", function()
 		main:ClosePopup()
 	end)
 	return self:OpenPopup(m_max(DrawStringWidth(16, "VAR", msg) + 30, 190), 70 + numMsgLines * 16, title, controls, "close")
@@ -1468,7 +1468,7 @@ function main:OpenConfirmPopup(title, msg, confirmLabel, onConfirm)
 		main:ClosePopup()
 		onConfirm()
 	end)
-	t_insert(controls, new("ButtonControl", nil, {5 + m_ceil(confirmWidth/2), 40 + numMsgLines * 16, confirmWidth, 20}, T("Cancel"), function()
+	t_insert(controls, new("ButtonControl", nil, {5 + m_ceil(confirmWidth/2), 40 + numMsgLines * 16, confirmWidth, 20}, "Cancel", function()
 		main:ClosePopup()
 	end))
 	return self:OpenPopup(m_max(DrawStringWidth(16, "VAR", msg) + 30, 190), 70 + numMsgLines * 16, title, controls, "confirm")
@@ -1480,11 +1480,11 @@ function main:OpenNewFolderPopup(path, onClose)
 	controls.edit = new("EditControl", nil, {0, 40, 350, 20}, nil, nil, "\\/:%*%?\"<>|%c", 100, function(buf)
 		controls.create.enabled = buf:match("%S")
 	end)
-	controls.create = new("ButtonControl", nil, {-45, 70, 80, 20}, T("Create"), function()
+	controls.create = new("ButtonControl", nil, {-45, 70, 80, 20}, "Create", function()
 		local newFolderName = controls.edit.buf
 		local res, msg = MakeDir(path..newFolderName)
 		if not res then
-			main:OpenMessagePopup(T("Error"), "Couldn't create '"..newFolderName.."': "..msg)
+			main:OpenMessagePopup("Error", "Couldn't create '"..newFolderName.."': "..msg)
 			return
 		end
 		if onClose then
@@ -1493,13 +1493,13 @@ function main:OpenNewFolderPopup(path, onClose)
 		main:ClosePopup()
 	end)
 	controls.create.enabled = false
-	controls.cancel = new("ButtonControl", nil, {45, 70, 80, 20}, T("Cancel"), function()
+	controls.cancel = new("ButtonControl", nil, {45, 70, 80, 20}, "Cancel", function()
 		if onClose then
 			onClose()
 		end
 		main:ClosePopup()
 	end)
-	main:OpenPopup(370, 100, T("New Folder"), controls, "create", "edit", "cancel")
+	main:OpenPopup(370, 100, "New Folder", controls, "create", "edit", "cancel")
 end
 
 function main:SetWindowTitleSubtext(subtext)

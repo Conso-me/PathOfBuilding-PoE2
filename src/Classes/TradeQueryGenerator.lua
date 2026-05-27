@@ -719,7 +719,7 @@ function TradeQueryGeneratorClass:StartQuery(slot, options)
 	-- Open progress tracking blocker popup
 	local controls = { }
 	controls.progressText = new("LabelControl", {"TOP",nil,"TOP"}, {0, 30, 0, 16}, string.format("Calculating Mod Weights..."))
-	self.calcContext.popup = main:OpenPopup(280, 65, T("Please Wait"), controls)
+	self.calcContext.popup = main:OpenPopup(280, 65, "Please Wait", controls)
 end
 
 function TradeQueryGeneratorClass:ExecuteQuery()
@@ -896,7 +896,7 @@ function TradeQueryGeneratorClass:RequestQuery(slot, context, statWeights, callb
 	if isJewelSlot then
 		controls.jewelType = new("DropDownControl", {"TOPLEFT",lastItemAnchor,"BOTTOMLEFT"}, {0, 5, 100, 18}, { "Any", "Base", "Radius" }, function(index, value) end) -- this does nothing atm
 		controls.jewelType.selIndex = self.lastJewelType or 1
-		controls.jewelTypeLabel = new("LabelControl", {"RIGHT",controls.jewelType,"LEFT"}, {-5, 0, 0, 16}, T("Jewel Type:"))
+		controls.jewelTypeLabel = new("LabelControl", {"RIGHT",controls.jewelType,"LEFT"}, {-5, 0, 0, 16}, "Jewel Type:")
 		updateLastAnchor(controls.jewelType)
 	end
 
@@ -924,13 +924,13 @@ function TradeQueryGeneratorClass:RequestQuery(slot, context, statWeights, callb
 	updateLastAnchor(controls.maxPrice)
 
 	controls.maxLevel = new("EditControl", {"TOPLEFT",lastItemAnchor,"BOTTOMLEFT"}, {0, 5, 100, 18}, nil, nil, "%D")
-	controls.maxLevelLabel = new("LabelControl", {"RIGHT",controls.maxLevel,"LEFT"}, {-5, 0, 0, 16}, T("Max Level:"))
+	controls.maxLevelLabel = new("LabelControl", {"RIGHT",controls.maxLevel,"LEFT"}, {-5, 0, 0, 16}, "Max Level:")
 	updateLastAnchor(controls.maxLevel)
 
 	-- basic filtering by slot for sockets Megalomaniac does not have slot and Sockets use "Jewel nodeId"
 	if slot and not isJewelSlot and not slot.slotName:find("Flask") and not slot.slotName:find("Belt") and not slot.slotName:find("Ring") and not slot.slotName:find("Amulet") and not slot.slotName:find("Charm") then
 		controls.sockets = new("EditControl", {"TOPLEFT",lastItemAnchor,"BOTTOMLEFT"}, {0, 5, 70, 18}, nil, nil, "%D")
-		controls.socketsLabel = new("LabelControl", {"RIGHT",controls.sockets,"LEFT"}, {-5, 0, 0, 16}, T("# of Empty Sockets:"))
+		controls.socketsLabel = new("LabelControl", {"RIGHT",controls.sockets,"LEFT"}, {-5, 0, 0, 16}, "# of Empty Sockets:")
 		updateLastAnchor(controls.sockets)
 	end
 
@@ -944,8 +944,8 @@ function TradeQueryGeneratorClass:RequestQuery(slot, context, statWeights, callb
 			-- tooltips do not actually work for labels
 			lastItemAnchor.tooltipFunc = function(tooltip)
 				tooltip:Clear()
-				tooltip:AddLine(16, T("Sorts the weights by the stats selected multiplied by a value"))
-				tooltip:AddLine(16, T("Currently sorting by:"))
+				tooltip:AddLine(16, "Sorts the weights by the stats selected multiplied by a value")
+				tooltip:AddLine(16, "Currently sorting by:")
 				for i, stat in ipairs(statWeights) do
 					if i > 4 then
 						tooltip:AddLine(16, s_format("%s: %.2f", stat.label, stat.weightMult))
@@ -957,7 +957,7 @@ function TradeQueryGeneratorClass:RequestQuery(slot, context, statWeights, callb
 	end
 	popupHeight = popupHeight + 4
 
-	controls.generateQuery = new("ButtonControl", { "BOTTOM", nil, "BOTTOM" }, {-45, -10, 80, 20}, T("Execute"), function()
+	controls.generateQuery = new("ButtonControl", { "BOTTOM", nil, "BOTTOM" }, {-45, -10, 80, 20}, "Execute", function()
 		main:ClosePopup()
 
 		if controls.includeMirrored then
@@ -987,8 +987,8 @@ function TradeQueryGeneratorClass:RequestQuery(slot, context, statWeights, callb
 
 		self:StartQuery(slot, options)
 	end)
-	controls.cancel = new("ButtonControl", { "BOTTOM", nil, "BOTTOM" }, {45, -10, 80, 20}, T("Cancel"), function()
+	controls.cancel = new("ButtonControl", { "BOTTOM", nil, "BOTTOM" }, {45, -10, 80, 20}, "Cancel", function()
 		main:ClosePopup()
 	end)
-	main:OpenPopup(400, popupHeight, T("Query Options"), controls)
+	main:OpenPopup(400, popupHeight, "Query Options", controls)
 end

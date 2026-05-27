@@ -251,17 +251,17 @@ function TradeQueryClass:PriceItem()
 		poesessid_controls.sessionInput:SetProtected(true)
 		poesessid_controls.sessionInput.placeholder = "Enter your session ID here"
 		poesessid_controls.sessionInput.tooltipText = "You can get this from your web browser's cookies while logged into the Path of Exile website."
-		poesessid_controls.save = new("ButtonControl", {"TOPRIGHT", poesessid_controls.sessionInput, "TOP"}, {-8, 24, 90, row_height}, T("Save"), function()
+		poesessid_controls.save = new("ButtonControl", {"TOPRIGHT", poesessid_controls.sessionInput, "TOP"}, {-8, 24, 90, row_height}, "Save", function()
 			main.POESESSID = poesessid_controls.sessionInput.buf
 			main:ClosePopup()
 			main:SaveSettings()
 			self:UpdateRealms()
 		end)
 		poesessid_controls.save.enabled = function() return #poesessid_controls.sessionInput.buf == 32 or poesessid_controls.sessionInput.buf == "" end
-		poesessid_controls.cancel = new("ButtonControl", {"TOPLEFT", poesessid_controls.sessionInput, "TOP"}, {8, 24, 90, row_height}, T("Cancel"), function()
+		poesessid_controls.cancel = new("ButtonControl", {"TOPLEFT", poesessid_controls.sessionInput, "TOP"}, {8, 24, 90, row_height}, "Cancel", function()
 			main:ClosePopup()
 		end)
-		main:OpenPopup(364, 72, T("Change session ID"), poesessid_controls)
+		main:OpenPopup(364, 72, "Change session ID", poesessid_controls)
 	end)
 	self.controls.poesessidButton.tooltipText = [[
 The Trader feature supports two modes of operation depending on the POESESSID availability.
@@ -294,9 +294,9 @@ on trade site to work on other leagues and realms)]]
 	end
 	self.controls.fetchCountEdit.tooltipFunc = function(tooltip)
 		tooltip:Clear()
-		tooltip:AddLine(16, T("Specify maximum number of item pages to retrieve per search from PoE Trade."))
-		tooltip:AddLine(16, T("Each page fetches up to 10 items."))
-		tooltip:AddLine(16, T("Acceptable Range is: 1 to 10"))
+		tooltip:AddLine(16, "Specify maximum number of item pages to retrieve per search from PoE Trade.")
+		tooltip:AddLine(16, "Each page fetches up to 10 items.")
+		tooltip:AddLine(16, "Acceptable Range is: 1 to 10")
 	end
 
 	-- Stat sort popup button
@@ -311,8 +311,8 @@ on trade site to work on other leagues and realms)]]
 	end)
 	self.controls.StatWeightMultipliersButton.tooltipFunc = function(tooltip)
 		tooltip:Clear()
-		tooltip:AddLine(16, T("Sorts the weights by the stats selected multiplied by a value"))
-		tooltip:AddLine(16, T("Currently sorting by:"))
+		tooltip:AddLine(16, "Sorts the weights by the stats selected multiplied by a value")
+		tooltip:AddLine(16, "Currently sorting by:")
 		for _, stat in ipairs(self.statSortSelectionList) do
 			tooltip:AddLine(16, s_format("%s: %.2f", stat.label, stat.weightMult))
 		end
@@ -355,7 +355,7 @@ Highest Weight - Displays the order retrieved from trade]]
 	end)
 	self.controls.enchantInSort.tooltipText = "This includes enchants in sorting that occurs after trade results have been retrieved"
 
-	self.controls.updateCurrencyConversion = new("ButtonControl", {"BOTTOMLEFT", nil, "BOTTOMLEFT"}, {pane_margins_horizontal, -pane_margins_vertical, 240, row_height}, T("Get Currency Conversion Rates"), function()
+	self.controls.updateCurrencyConversion = new("ButtonControl", {"BOTTOMLEFT", nil, "BOTTOMLEFT"}, {pane_margins_horizontal, -pane_margins_vertical, 240, row_height}, "Get Currency Conversion Rates", function()
 		-- self:PullPoENinjaCurrencyConversion(self.pbLeague)
 	end)
 	self.controls.pbNotice = new("LabelControl",  {"BOTTOMRIGHT", nil, "BOTTOMRIGHT"}, {-row_height - pane_margins_vertical - row_vertical_padding, -pane_margins_vertical - row_height - row_vertical_padding, 300, row_height}, "")
@@ -487,7 +487,7 @@ Highest Weight - Displays the order retrieved from trade]]
 		end
 	end
 	self.controls.fullPrice = new("LabelControl", {"BOTTOM", nil, "BOTTOM"}, {0, -row_height - pane_margins_vertical - row_vertical_padding, pane_width - 2 * pane_margins_horizontal, row_height}, "")
-	self.controls.close = new("ButtonControl", {"BOTTOM", nil, "BOTTOM"}, {0, -pane_margins_vertical, 90, row_height}, T("Done"), function()
+	self.controls.close = new("ButtonControl", {"BOTTOM", nil, "BOTTOM"}, {0, -pane_margins_vertical, 90, row_height}, "Done", function()
 		main:ClosePopup()
 		-- there's a case where if you have a socket(s) allocated, open TradeQuery, close it, dealloc, then open TradeQuery again
 		-- the deallocated socket controls were still showing, so this will remove all dynamically created controls from items
@@ -500,7 +500,7 @@ Highest Weight - Displays the order retrieved from trade]]
 		self.controls.scrollBar:SetContentDimension(self.pane_height-100, self.effective_rows_height)
 		self.controls.sectionAnchor.y = -self.controls.scrollBar.offset
 	end
-	main:OpenPopup(pane_width, self.pane_height, T("Trader"), self.controls, nil, nil, "close", (scrollBarShown and scrollBarFunc or nil))
+	main:OpenPopup(pane_width, self.pane_height, "Trader", self.controls, nil, nil, "close", (scrollBarShown and scrollBarFunc or nil))
 end
 
 -- Popup to set stat weight multipliers for sorting
@@ -565,7 +565,7 @@ function TradeQueryClass:SetStatWeights(previousSelectionList)
 		end
 	end
 
-	controls.finalise = new("ButtonControl", { "BOTTOM", nil, "BOTTOM" }, {-90, -10, 80, 20}, T("Save"), function()
+	controls.finalise = new("ButtonControl", { "BOTTOM", nil, "BOTTOM" }, {-90, -10, 80, 20}, "Save", function()
 		main:ClosePopup()
 
 		-- used in ItemsTab to save to xml under TradeSearchWeights node
@@ -583,13 +583,13 @@ function TradeQueryClass:SetStatWeights(previousSelectionList)
 			self:UpdateControlsWithItems(row_idx)
 		end
     end)
-	controls.cancel = new("ButtonControl", { "BOTTOM", nil, "BOTTOM" }, { 0, -10, 80, 20 }, T("Cancel"), function()
+	controls.cancel = new("ButtonControl", { "BOTTOM", nil, "BOTTOM" }, { 0, -10, 80, 20 }, "Cancel", function()
 		if previousSelectionList and #previousSelectionList > 0 then
 			self.statSortSelectionList = copyTable(previousSelectionList, true)
 		end
 		main:ClosePopup()
 	end)
-	controls.reset = new("ButtonControl", { "BOTTOM", nil, "BOTTOM" }, { 90, -10, 80, 20 }, T("Reset"), function()
+	controls.reset = new("ButtonControl", { "BOTTOM", nil, "BOTTOM" }, { 90, -10, 80, 20 }, "Reset", function()
 		local previousSelection = { }
 		if isSameAsDefaultList(self.statSortSelectionList) then
 			previousSelection = copyTable(previousSelectionList, true)
@@ -601,7 +601,7 @@ function TradeQueryClass:SetStatWeights(previousSelectionList)
 		main:ClosePopup()
 		self:SetStatWeights(previousSelection)
 	end)
-	main:OpenPopup(420, popupHeight, T("Stat Weight Multipliers"), controls)
+	main:OpenPopup(420, popupHeight, "Stat Weight Multipliers", controls)
 end
 
 -- Method to update the Currency Conversion button label
@@ -616,7 +616,7 @@ function TradeQueryClass:SetCurrencyConversionButton()
 		self.controls.updateCurrencyConversion.enabled = false
 		self.controls.updateCurrencyConversion.tooltipFunc = function(tooltip)
 			tooltip:Clear()
-			tooltip:AddLine(16, T("Currency Conversion rates are pulled from PoE Ninja"))
+			tooltip:AddLine(16, "Currency Conversion rates are pulled from PoE Ninja")
 		end
 		return
 	end
@@ -647,10 +647,10 @@ function TradeQueryClass:SetCurrencyConversionButton()
 			self.pbFileTimestampDiff[self.controls.league.selIndex] = get_time() - self.lastCurrencyFileTime[self.controls.league.selIndex]
 		end
 		if self.pbFileTimestampDiff[self.controls.league.selIndex] == nil or self.pbFileTimestampDiff[self.controls.league.selIndex] >= 3600 then
-			tooltip:AddLine(16, T("Currency Conversion rates are pulled from PoE Ninja"))
-			tooltip:AddLine(16, T("Updates are limited to once per hour and not necessary more than once per day"))
+			tooltip:AddLine(16, "Currency Conversion rates are pulled from PoE Ninja")
+			tooltip:AddLine(16, "Updates are limited to once per hour and not necessary more than once per day")
 		elseif self.pbFileTimestampDiff[self.controls.league.selIndex] ~= nil and self.pbFileTimestampDiff[self.controls.league.selIndex] < 3600 then
-			tooltip:AddLine(16, T("Conversion Rates are less than an hour old (") .. tostring(self.pbFileTimestampDiff[self.controls.league.selIndex]) .. " seconds old)")
+			tooltip:AddLine(16, "Conversion Rates are less than an hour old (" .. tostring(self.pbFileTimestampDiff[self.controls.league.selIndex]) .. " seconds old)")
 		end
 	end
 end
@@ -843,7 +843,7 @@ function TradeQueryClass:PriceItemRowDisplay(row_idx, top_pane_alignment_ref, ro
 	local activeSlot = slotTbl.nodeId and self.itemsTab.sockets[slotTbl.nodeId] or slotTbl.slotName and self.itemsTab.slots[slotTbl.slotName]
 	local nameColor = slotTbl.unique and colorCodes.UNIQUE or "^7"
 	controls["name"..row_idx] = new("LabelControl", top_pane_alignment_ref, {0, row_idx*(row_height + row_vertical_padding), 100, row_height - 4}, nameColor..slotTbl.slotName)
-	controls["bestButton"..row_idx] = new("ButtonControl", { "LEFT", controls["name"..row_idx], "LEFT"}, {100 + 8, 0, 80, row_height}, T("Find best"), function()
+	controls["bestButton"..row_idx] = new("ButtonControl", { "LEFT", controls["name"..row_idx], "LEFT"}, {100 + 8, 0, 80, row_height}, "Find best", function()
 		self.tradeQueryGenerator:RequestQuery(activeSlot, { slotTbl = slotTbl, controls = controls, row_idx = row_idx }, self.statSortSelectionList, function(context, query, errMsg)
 			if errMsg then
 				self:SetNotice(context.controls.pbNotice, colorCodes.NEGATIVE .. errMsg)
@@ -907,10 +907,10 @@ function TradeQueryClass:PriceItemRowDisplay(row_idx, top_pane_alignment_ref, ro
 	controls["uri"..row_idx].tooltipFunc = function(tooltip)
 		tooltip:Clear()
 		if controls["uri"..row_idx].buf:find('^'..self.hostName..'trade2/search/') ~= nil then
-			tooltip:AddLine(16, T("Control + click to open in web-browser"))
+			tooltip:AddLine(16, "Control + click to open in web-browser")
 		end
 	end
-	controls["priceButton"..row_idx] = new("ButtonControl", { "TOPLEFT", controls["uri"..row_idx], "TOPRIGHT"}, {8, 0, 100, row_height}, T("Price Item"),
+	controls["priceButton"..row_idx] = new("ButtonControl", { "TOPLEFT", controls["uri"..row_idx], "TOPRIGHT"}, {8, 0, 100, row_height}, "Price Item",
 		function()
 			controls["priceButton"..row_idx].label = "Searching..."
 			self.tradeQueryRequests:SearchWithURL(controls["uri"..row_idx].buf, function(items, errMsg)
@@ -933,15 +933,15 @@ function TradeQueryClass:PriceItemRowDisplay(row_idx, top_pane_alignment_ref, ro
 	controls["priceButton"..row_idx].tooltipFunc = function(tooltip)
 		tooltip:Clear()
 		if not main.POESESSID or main.POESESSID == "" then
-			tooltip:AddLine(16, T("You must set your POESESSID to use search feature"))
+			tooltip:AddLine(16, "You must set your POESESSID to use search feature")
 		elseif not controls["uri"..row_idx].validURL then
-			tooltip:AddLine(16, T("Enter a valid trade URL"))
+			tooltip:AddLine(16, "Enter a valid trade URL")
 		end
 	end
 	local clampItemIndex = function(index)
 		return m_min(m_max(index or 1, 1), self.sortedResultTbl[row_idx] and #self.sortedResultTbl[row_idx] or 1)
 	end
-	controls["changeButton"..row_idx] = new("ButtonControl", { "LEFT", controls["name"..row_idx], "LEFT"}, {100 + 8, 0, 80, row_height}, T("<< Search"), function()
+	controls["changeButton"..row_idx] = new("ButtonControl", { "LEFT", controls["name"..row_idx], "LEFT"}, {100 + 8, 0, 80, row_height}, "<< Search", function()
 		self.itemIndexTbl[row_idx] = nil
 		self.sortedResultTbl[row_idx] = nil
 		self.resultTbl[row_idx] = nil
@@ -975,7 +975,7 @@ function TradeQueryClass:PriceItemRowDisplay(row_idx, top_pane_alignment_ref, ro
 		tooltip:AddSeparator(10)
 		tooltip:AddLine(16, string.format("^7Price: %s %s", result.amount, result.currency))
 	end
-	controls["importButton"..row_idx] = new("ButtonControl", { "TOPLEFT", controls["resultDropdown"..row_idx], "TOPRIGHT"}, {8, 0, 100, row_height}, T("Import Item"), function()
+	controls["importButton"..row_idx] = new("ButtonControl", { "TOPLEFT", controls["resultDropdown"..row_idx], "TOPRIGHT"}, {8, 0, 100, row_height}, "Import Item", function()
 		self.itemsTab:CreateDisplayItemFromRaw(self.resultTbl[row_idx][self.itemIndexTbl[row_idx]].item_string)
 		local item = self.itemsTab.displayItem
 		-- pass "true" to not auto equip it as we will have our own logic
@@ -1012,7 +1012,7 @@ function TradeQueryClass:PriceItemRowDisplay(row_idx, top_pane_alignment_ref, ro
 		tooltip:Clear()
 		if self.itemIndexTbl[row_idx] and self.resultTbl[row_idx][self.itemIndexTbl[row_idx]].item_string then
 			tooltip.center = true
-			tooltip:AddLine(16, T("Copies the item purchase whisper to the clipboard"))
+			tooltip:AddLine(16, "Copies the item purchase whisper to the clipboard")
 		end
 	end
 end

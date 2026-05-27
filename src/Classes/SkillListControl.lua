@@ -30,14 +30,14 @@ local SkillListClass = newClass("SkillListControl", "ListControl", function(self
 	self.ListControl(anchor, rect, 16, "VERTICAL", true, skillsTab.socketGroupList)
 	self.skillsTab = skillsTab
 	self.label = "^7Socket Groups:"
-	self.controls.delete = new("ButtonControl", {"BOTTOMRIGHT",self,"TOPRIGHT"}, {0, -2, 60, 18}, T("Delete"), function()
+	self.controls.delete = new("ButtonControl", {"BOTTOMRIGHT",self,"TOPRIGHT"}, {0, -2, 60, 18}, "Delete", function()
 		self:OnSelDelete(self.selIndex, self.selValue)
 	end)
 	self.controls.delete.enabled = function()
 		return self.selValue ~= nil and self.selValue.source == nil
 	end
-	self.controls.deleteAll = new("ButtonControl", {"RIGHT",self.controls.delete,"LEFT"}, {-4, 0, 70, 18}, T("Delete All"), function()
-		main:OpenConfirmPopup(T("Delete All"), "Are you sure you want to delete all socket groups in this build?", "Delete", function()
+	self.controls.deleteAll = new("ButtonControl", {"RIGHT",self.controls.delete,"LEFT"}, {-4, 0, 70, 18}, "Delete All", function()
+		main:OpenConfirmPopup("Delete All", "Are you sure you want to delete all socket groups in this build?", "Delete", function()
 			wipeTable(self.list)
 			skillsTab:SetDisplayGroup()
 			skillsTab:AddUndoState()
@@ -49,7 +49,7 @@ local SkillListClass = newClass("SkillListControl", "ListControl", function(self
 	self.controls.deleteAll.enabled = function()
 		return #self.list > 0 
 	end
-	self.controls.new = new("ButtonControl", {"RIGHT",self.controls.deleteAll,"LEFT"}, {-4, 0, 60, 18}, T("New"), function()
+	self.controls.new = new("ButtonControl", {"RIGHT",self.controls.deleteAll,"LEFT"}, {-4, 0, 60, 18}, "New", function()
 		local newGroup = { 
 			label = "", 
 			enabled = true, 
@@ -141,7 +141,7 @@ function SkillListClass:OnSelDelete(index, socketGroup)
 		end
 	end
 	if socketGroup.source then
-		main:OpenMessagePopup(T("Delete Socket Group"), "This socket group cannot be deleted as it is created by an equipped item.")
+		main:OpenMessagePopup("Delete Socket Group", "This socket group cannot be deleted as it is created by an equipped item.")
 	elseif not socketGroup.gemList[1] then
 		t_remove(self.list, index)
 		if self.skillsTab.displayGroup == socketGroup then
@@ -152,7 +152,7 @@ function SkillListClass:OnSelDelete(index, socketGroup)
 		self.skillsTab.build.buildFlag = true
 		self.selValue = nil
 	else
-		main:OpenConfirmPopup(T("Delete Socket Group"), "Are you sure you want to delete '"..socketGroup.displayLabel.."'?", "Delete", function()
+		main:OpenConfirmPopup("Delete Socket Group", "Are you sure you want to delete '"..socketGroup.displayLabel.."'?", "Delete", function()
 			t_remove(self.list, index)
 			if self.skillsTab.displayGroup == socketGroup then
 				self.skillsTab:SetDisplayGroup()
