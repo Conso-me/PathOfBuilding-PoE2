@@ -21,6 +21,35 @@ end
 -- Atlas texture handles, keyed by size: { [14] = imgHandle, ... }
 local atlasHandles = {}
 
+-- Translation lookup. Wired by Launch.lua after Locale loads (we cannot import
+-- Locale here because JaText loads first). Hook stays inert until populated.
+JaText.localeGetMap = nil
+
+-- PoB color codes are caret-prefixed: "^N" (digit) or "^xRRGGBB" (hex).
+-- They appear concatenated outside translation calls (e.g. "^7" .. "Language:"),
+-- so we peel them before T_MAP lookup and re-attach after.
+local function stripLeadingColor(s)
+	local prefix, body = "", s
+	while true do
+		local p, rest = body:match("^(%^x%x%x%x%x%x%x)(.*)$")
+		if not p then p, rest = body:match("^(%^%d)(.*)$") end
+		if not p then break end
+		prefix = prefix .. p
+		body = rest
+	end
+	return prefix, body
+end
+
+local function translate(s)
+	if not JaText.localeGetMap then return s end
+	local map = JaText.localeGetMap()
+	if not map then return s end
+	local prefix, body = stripLeadingColor(s)
+	local hit = map[body]
+	if hit then return prefix .. hit end
+	return s
+end
+
 -- Retrieve (and cache) atlas handle for the given pixel size.
 -- NewImageHandle:Load() resolves relative paths from the exe directory (runtime/),
 -- NOT from the Lua CWD (src/). So "SimpleGraphic/Fonts/JA.{size}.tga" is correct.
@@ -254,6 +283,7 @@ function JaText.installHook()
 		if type(text) ~= "string" then
 			return _origDrawString(x, y, align, height, font, text, ...)
 		end
+		text = translate(text)
 		return mixedDraw(x, y, align, height, font, text)
 	end
 
@@ -261,6 +291,7 @@ function JaText.installHook()
 		if type(text) ~= "string" then
 			return _origDrawStringWidth(height, font, text, ...)
 		end
+		text = translate(text)
 		return mixedWidth(height, font, text)
 	end
 

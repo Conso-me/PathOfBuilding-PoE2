@@ -99,6 +99,11 @@ function launch:OnInit()
 			KeywordT = Locale.KeywordT or identity
 			ModFormat = Locale.ModFormat or identity
 			self.locale = Locale
+			-- Wire the flat T_MAP into JaText so its DrawString hook can
+			-- translate at render time (replaces per-callsite T() wrappers).
+			if self.jaText and Locale.GetTMap then
+				self.jaText.localeGetMap = Locale.GetTMap
+			end
 		end
 	end
 
