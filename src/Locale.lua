@@ -46,6 +46,41 @@ local function loadDict(locale, name)
 	return cache[locale][name]
 end
 
+-- Auto-register "Key:" ↔ "Key" colon variants. Many callsites build labels by
+-- concatenating ":" themselves; mirror entries so either form hits the map.
+-- Handles ASCII ":" and JA fullwidth "：" on the JA side.
+local function endsWithColon(s)
+	return s:sub(-1) == ":" or s:sub(-3) == "："
+end
+
+local function stripTrailingColon(s)
+	if s:sub(-1) == ":" then return s:sub(1, -2) end
+	if s:sub(-3) == "：" then return s:sub(1, -4) end
+	return s
+end
+
+local function bridgeColons(map)
+	local additions = { }
+	for k, v in pairs(map) do
+		if type(k) == "string" and type(v) == "string" and not k:find("\n", 1, true) then
+			if endsWithColon(k) then
+				local kStrip = stripTrailingColon(k):gsub("%s+$", "")
+				if kStrip ~= "" and not map[kStrip] and not additions[kStrip] then
+					additions[kStrip] = stripTrailingColon(v)
+				end
+			else
+				local kCol = k .. ":"
+				if not map[kCol] and not additions[kCol] then
+					additions[kCol] = endsWithColon(v) and v or (v .. ":")
+				end
+			end
+		end
+	end
+	for k, v in pairs(additions) do
+		map[k] = v
+	end
+end
+
 -- Build a single flat lookup table merging all category dicts.
 -- Used by the DrawString hook (JaText) to translate at render time
 -- instead of at per-callsite T() wrappers.
@@ -60,6 +95,7 @@ local function buildTMap()
 			T_MAP[k] = v
 		end
 	end
+	bridgeColons(T_MAP)
 	T_MAP_built = true
 	return T_MAP
 end
@@ -127,6 +163,74 @@ local function loadModPatterns(locale)
 	modCache[locale] = merged
 	return merged
 end
+
+-- Numeric tokenizer: replaces literal numbers (incl. (N-M) ranges, optional
+-- sign, decimals, trailing %) with {0}{1}... placeholders so a runtime string
+-- like "+15 to Strength" can probe the dict for a templatized key
+-- "{0} to Strength". Existing {N} placeholders in the source pass through
+-- untouched. Returns (template, valueList) where valueList[i] is the i-1
+-- token's original literal (1-indexed; tokens are 0-indexed).
+local function tokenizeNumbers(s)
+	if type(s) ~= "string" or s == "" then return s, { } end
+	local out = { }
+	local vals = { }
+	local idx = 0
+	local i = 1
+	local n = #s
+	while i <= n do
+		local placeholder = s:match("^{%d+%%?}", i)
+		if placeholder then
+			out[#out + 1] = placeholder
+			i = i + #placeholder
+		else
+			local rs, re, a, b, pct = s:find("^%(([%-%+]?%d+%.?%d*)%s*%-%s*([%-%+]?%d+%.?%d*)%)(%%?)", i)
+			if rs then
+				vals[#vals + 1] = string.format("(%s-%s)", a, b)
+				out[#out + 1] = "{" .. idx .. "}" .. pct
+				idx = idx + 1
+				i = re + 1
+			else
+				local ns, ne, sign, digits, dec, pct2 = s:find("^([%-%+]?)(%d+)(%.?%d*)(%%?)", i)
+				if ns then
+					-- If the matched sign is actually a hyphen separator
+					-- (e.g. "10-20" without parens), leave it as a literal
+					-- and tokenize only the bare number on the next iteration.
+					if sign ~= "" and i > 1 then
+						local prev = s:sub(i - 1, i - 1)
+						if prev:match("[%w%)]") then
+							out[#out + 1] = sign
+							i = i + 1
+						else
+							vals[#vals + 1] = sign .. digits .. dec
+							out[#out + 1] = "{" .. idx .. "}" .. pct2
+							idx = idx + 1
+							i = ne + 1
+						end
+					else
+						vals[#vals + 1] = sign .. digits .. dec
+						out[#out + 1] = "{" .. idx .. "}" .. pct2
+						idx = idx + 1
+						i = ne + 1
+					end
+				else
+					out[#out + 1] = s:sub(i, i)
+					i = i + 1
+				end
+			end
+		end
+	end
+	return table.concat(out), vals
+end
+
+local function applyTokens(template, vals)
+	if type(template) ~= "string" or not vals or #vals == 0 then return template end
+	return (template:gsub("{(%d+)}", function(n)
+		return vals[tonumber(n) + 1] or ("{" .. n .. "}")
+	end))
+end
+
+function Locale.TokenizeNumbers(s) return tokenizeNumbers(s) end
+function Locale.ApplyTokens(t, v) return applyTokens(t, v) end
 
 function Locale.ModFormat(line)
 	if type(line) ~= "string" or line == "" then return line end

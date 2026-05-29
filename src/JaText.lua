@@ -24,14 +24,17 @@ local atlasHandles = {}
 -- Translation lookup. Wired by Launch.lua after Locale loads (we cannot import
 -- Locale here because JaText loads first). Hook stays inert until populated.
 JaText.localeGetMap = nil
+JaText.locale = nil  -- exposes Locale.TokenizeNumbers / Locale.ApplyTokens
 
--- PoB color codes are caret-prefixed: "^N" (digit) or "^xRRGGBB" (hex).
--- They appear concatenated outside translation calls (e.g. "^7" .. "Language:"),
--- so we peel them before T_MAP lookup and re-attach after.
+-- PoB color codes are caret-prefixed: "^N" (digit), "^^N" (also digit), or
+-- "^xRRGGBB" (hex). They get concatenated outside translation calls
+-- (e.g. "^7" .. "Language:"), so we peel them before T_MAP lookup and
+-- re-attach after.
 local function stripLeadingColor(s)
 	local prefix, body = "", s
 	while true do
 		local p, rest = body:match("^(%^x%x%x%x%x%x%x)(.*)$")
+		if not p then p, rest = body:match("^(%^%^%d)(.*)$") end
 		if not p then p, rest = body:match("^(%^%d)(.*)$") end
 		if not p then break end
 		prefix = prefix .. p
@@ -40,13 +43,47 @@ local function stripLeadingColor(s)
 	return prefix, body
 end
 
+-- Strip all PoB color codes (leading + interior) for a coarse lossy lookup.
+-- We use this as a last-ditch translation path: color positions don't survive
+-- the round trip, but at least the user sees JA text instead of EN.
+local function stripAllColors(s)
+	return (s:gsub("%^x%x%x%x%x%x%x", ""):gsub("%^%^?%d", ""))
+end
+
 local function translate(s)
 	if not JaText.localeGetMap then return s end
 	local map = JaText.localeGetMap()
 	if not map then return s end
+
+	-- 1. Exact match (fastest path).
+	local hit = map[s]
+	if hit then return hit end
+
+	-- 2. Leading color codes stripped, body looked up, prefix reattached.
 	local prefix, body = stripLeadingColor(s)
-	local hit = map[body]
-	if hit then return prefix .. hit end
+	if body ~= s then
+		hit = map[body]
+		if hit then return prefix .. hit end
+	end
+
+	-- 3. All color codes stripped (handles interior ^xRRGGBB). Lossy on color.
+	local naked = stripAllColors(s)
+	if naked ~= "" and naked ~= s and naked ~= body then
+		hit = map[naked]
+		if hit then return hit end
+	end
+
+	-- 4. Numeric tokenization fallback: "+15 to Strength" → "{0} to Strength"
+	-- looked up, then values reinserted into the JA template.
+	if JaText.locale and JaText.locale.TokenizeNumbers then
+		local probe = (naked ~= "" and naked) or body or s
+		local tmpl, vals = JaText.locale.TokenizeNumbers(probe)
+		if tmpl ~= probe and vals and #vals > 0 then
+			hit = map[tmpl]
+			if hit then return JaText.locale.ApplyTokens(hit, vals) end
+		end
+	end
+
 	return s
 end
 

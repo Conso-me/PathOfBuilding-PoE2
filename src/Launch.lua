@@ -101,8 +101,11 @@ function launch:OnInit()
 			self.locale = Locale
 			-- Wire the flat T_MAP into JaText so its DrawString hook can
 			-- translate at render time (replaces per-callsite T() wrappers).
+			-- Also expose the Locale module itself so JaText.translate can call
+			-- TokenizeNumbers/ApplyTokens as a fallback path.
 			if self.jaText and Locale.GetTMap then
 				self.jaText.localeGetMap = Locale.GetTMap
+				self.jaText.locale = Locale
 			end
 		end
 	end
