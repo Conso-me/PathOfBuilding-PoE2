@@ -86,10 +86,14 @@ end
 -- instead of at per-callsite T() wrappers.
 -- Iteration order = priority: later entries win on key collision.
 -- Items is last to preserve the original ItemT() Items→Uniques fallback.
+-- ModTemplates entries use {0}{1}... placeholders so they only collide with
+-- runtime strings via the numeric-tokenizer fallback in JaText.translate;
+-- listed early so concrete dicts can still override them on the rare event
+-- of a literal key collision.
 local function buildTMap()
 	if T_MAP_built then return T_MAP end
 	T_MAP = { }
-	for _, name in ipairs({"UI", "Skills", "Stats", "Keywords", "Tree", "Uniques", "Items"}) do
+	for _, name in ipairs({"ModTemplates", "UI", "Skills", "Stats", "Keywords", "Tree", "Uniques", "Items"}) do
 		local d = loadDict(current, name)
 		for k, v in pairs(d) do
 			T_MAP[k] = v
@@ -164,12 +168,14 @@ local function loadModPatterns(locale)
 	return merged
 end
 
--- Numeric tokenizer: replaces literal numbers (incl. (N-M) ranges, optional
--- sign, decimals, trailing %) with {0}{1}... placeholders so a runtime string
--- like "+15 to Strength" can probe the dict for a templatized key
--- "{0} to Strength". Existing {N} placeholders in the source pass through
--- untouched. Returns (template, valueList) where valueList[i] is the i-1
--- token's original literal (1-indexed; tokens are 0-indexed).
+-- Numeric tokenizer: replaces literal unsigned numbers (incl. (N-M) ranges,
+-- decimals, trailing %) with {0}{1}... placeholders so a runtime string like
+-- "+15 to Strength" tokenizes to "+{0} to Strength" (the "+" stays literal,
+-- matching how poe2db scrapes mod-value spans). The (N-M) range parser keeps
+-- its inner-sign acceptance because parens disambiguate. Existing {N}
+-- placeholders in the source pass through. Returns (template, valueList)
+-- where valueList[i] is the i-1 token's original literal (1-indexed; tokens
+-- are 0-indexed).
 local function tokenizeNumbers(s)
 	if type(s) ~= "string" or s == "" then return s, { } end
 	local out = { }
@@ -190,28 +196,12 @@ local function tokenizeNumbers(s)
 				idx = idx + 1
 				i = re + 1
 			else
-				local ns, ne, sign, digits, dec, pct2 = s:find("^([%-%+]?)(%d+)(%.?%d*)(%%?)", i)
+				local ns, ne, digits, dec, pct2 = s:find("^(%d+)(%.?%d*)(%%?)", i)
 				if ns then
-					-- If the matched sign is actually a hyphen separator
-					-- (e.g. "10-20" without parens), leave it as a literal
-					-- and tokenize only the bare number on the next iteration.
-					if sign ~= "" and i > 1 then
-						local prev = s:sub(i - 1, i - 1)
-						if prev:match("[%w%)]") then
-							out[#out + 1] = sign
-							i = i + 1
-						else
-							vals[#vals + 1] = sign .. digits .. dec
-							out[#out + 1] = "{" .. idx .. "}" .. pct2
-							idx = idx + 1
-							i = ne + 1
-						end
-					else
-						vals[#vals + 1] = sign .. digits .. dec
-						out[#out + 1] = "{" .. idx .. "}" .. pct2
-						idx = idx + 1
-						i = ne + 1
-					end
+					vals[#vals + 1] = digits .. dec
+					out[#out + 1] = "{" .. idx .. "}" .. pct2
+					idx = idx + 1
+					i = ne + 1
 				else
 					out[#out + 1] = s:sub(i, i)
 					i = i + 1
